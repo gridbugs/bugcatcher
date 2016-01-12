@@ -56,40 +56,6 @@ var worldString = [
 '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
 ];
 
-var emptyWorld = [
-'&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                    @                                                  &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&                                                                       &', 
-'&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
-
-];
-
 function makeTree(x, y) {
     return new Entity(new Position(x, y), new Tile('&', 'green', 1), new Solid(), new Opacity(0.5));
 }
@@ -112,28 +78,6 @@ function makePlayerCharacter(x, y) {
                         new Vision(20),
                         new Opacity(0.2)
                     );
-}
-
-function* observeCircle(eyePosition, viewDistance, grid) {
-    var viewDistanceSquared = viewDistance * viewDistance;
-    for (let entity of entities) {
-        if (entity.hasComponent(Position)) {
-            var entityPosition = entity.Position.vec;
-            var distanceSquared = eyePosition.getDistanceSquared(entityPosition);
-            if (distanceSquared <= viewDistanceSquared) {
-                yield entity;
-            }
-        }
-    }
-}
-
-function* observeSquare(eyePosition, viewDistance, grid) {
-    for (let i = Math.max(eyePosition.y-viewDistance, 0); i <= Math.min(eyePosition.y+viewDistance, grid.height - 1); ++i) {
-        for (let j = Math.max(eyePosition.x-viewDistance, 0); j <= Math.min(eyePosition.x+viewDistance, grid.width - 1); ++j) {
-            let cell = grid.get(j, i);
-            yield* cell.keys();
-        }
-    }
 }
 
 function initWorld() {
