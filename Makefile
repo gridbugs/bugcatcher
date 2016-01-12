@@ -7,29 +7,30 @@ TRACEUR_DEBUG_FLAGS=--source-maps=inline
 TRACEUR_RELEASE_FLAGS=
 TRACEUR_OUTPUT_DIR=output
 TRACEUR_OUTPUT=$(TRACEUR_OUTPUT_DIR)/compiled.js
+TRACEUR_OUT=--out=$(TRACEUR_OUTPUT)
 JS_SRC_DIR=src
 JS_SRC_FILES=$(JS_SRC_DIR)/*.js
 
-WATCHCMD=inotifywait -qre close_write $(JS_SRC_DIR) > /dev/null
+WATCHCMD=inotifywait -qre close_write $(JS_SRC_DIR)
 
 .PHONY: watch clean rmtemp stripwhitespace debug
 
 all: debug
 
 debug: $(JS_SRC_FILES)
-	$(TRACEUR) $(TRACEUR_FEATURES) $(TRACEUR_DEBUG_FLAGS) --out $(TRACEUR_OUTPUT) $^
+	$(TRACEUR) $(TRACEUR_FEATURES) $(TRACEUR_DEBUG_FLAGS) $(TRACEUR_OUT) $^
 
 release: $(JS_SRC_FILES)
-	$(TRACEUR) $(TRACEUR_FEATURES) $(TRACEUR_RELEASE_FLAGS) --out $(TRACEUR_OUTPUT) $^
+	$(TRACEUR) $(TRACEUR_FEATURES) $(TRACEUR_RELEASE_FLAGS) $(TRACEUR_OUT) $^
 
 legacy: legacy-debug
 legacy-debug: $(JS_SRC_FILES)
-	$(TRACEUR) $(TRACEUR_LEGACY_FEATURES) $(TRACEUR_DEBUG_FLAGS) --out $(TRACEUR_OUTPUT) $^
+	$(TRACEUR) $(TRACEUR_LEGACY_FEATURES) $(TRACEUR_DEBUG_FLAGS) $(TRACEUR_OUT) $^
 legacy-release: $(JS_SRC_FILES)
-	$(TRACEUR) $(TRACEUR_LEGACY_FEATURES) $(TRACEUR_RELEASE_FLAGS) --out $(TRACEUR_OUTPUT) $^
+	$(TRACEUR) $(TRACEUR_LEGACY_FEATURES) $(TRACEUR_RELEASE_FLAGS) $(TRACEUR_OUT) $^
 
 watch:
-	while true; do make $(WATCHMAKE); $(WATCHCMD); done
+	while true; do sync; make $(WATCHMAKE); $(WATCHCMD); done
 
 clean:
 	rm -rf $(TRACEUR_OUTPUT_DIR)

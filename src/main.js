@@ -57,20 +57,22 @@ var worldString = [
 ];
 
 function makeTree(x, y) {
-    return new Entity(new Position(x, y), new Tile('&', 'green', 1), new Solid(), new Opacity(0.5));
+    return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5));
 }
 function makeWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', 'gray', 1), new Solid(), new Opacity(1));
+    return new Entity(new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1));
 }
 function makeGrass(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'darkgreen', 0), new Opacity(0));
+    return new Entity(new Position(x, y), new Tile('.', 'darkgreen', null, 0), new Opacity(0));
 }
 function makeFloor(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'gray', 0), new Opacity(0));
+    return new Entity(new Position(x, y), new Tile('.', 'gray', null, 0), new Opacity(0));
 }
+
+
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
-                        new Tile('@', 'white', 2),
+                        new Tile('@', 'white', null, 2),
                         new Actor(detectVisibleArea, getPlayerAction),
                         new PlayerCharacter(),
                         new Collider(),
@@ -115,14 +117,17 @@ class Renderer {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.fontSize = 16;
-        this.xPadding = 20;
-        this.yPadding = 0;
+        this.xPadding = 0;
+        this.yPadding = 20;
+        this.xBackgroundPadding = 0;
+        this.yBackgroundPadding = -12;
         this.ctx.font = `${this.fontSize}px Monospace`;
         this.cellWidth = this.ctx.measureText('@').width;
         this.cellHeight = this.fontSize;
         this.numCols = numCols;
         this.numRows = numRows;
         this.grid = new Grid(this.numCols, this.numRows);
+        this.unseenColour = '#444444';
         for (let [i, j] of this.grid.coordinates()) {
             this.grid.set(j, i, {seq: 0, entity: null, current: false});
         }
@@ -160,16 +165,32 @@ class Renderer {
             if (entity != null && entry.seq == this.seq) {
                 let vec = entity.Position.vec;
                 let colour;
+                let backgroundColour;
                 if (entry.current) {
                     colour = entity.Tile.colour;
+                    backgroundColour = entity.Tile.backgroundColour;
+                    if (backgroundColour == null) {
+                        backgroundColour = 'rgba(0, 0, 0, 0)';
+                    }
                 } else {
-                    colour = "#444444";
+                    backgroundColour = entity.Tile.backgroundColour;
+                    if (backgroundColour == null) {
+                        backgroundColour = 'rgba(0, 0, 0, 0)';
+                        colour = this.unseenColour;
+                    } else {
+                        colour = 'black';
+                        backgroundColour = this.unseenColour;
+                    }
+
                 }
+                this.ctx.fillStyle = backgroundColour;
+
+                let x = vec.x * this.cellWidth + this.xPadding;
+                let y = vec.y * this.cellHeight + this.yPadding;
+
+                this.ctx.fillRect(x + this.xBackgroundPadding, y + this.yBackgroundPadding, this.cellWidth, this.cellHeight);
                 this.ctx.fillStyle = colour;
-                this.ctx.fillText(entity.Tile.character,
-                              vec.x * this.cellWidth + this.yPadding,
-                              vec.y * this.cellHeight + this.xPadding
-                );
+                this.ctx.fillText(entity.Tile.character, x, y);
             }
         }
 
@@ -201,11 +222,6 @@ class ObservationEntityMap extends EntityMap {
         return this.maxOpacity;
     }
 
-    see(entity) {
-        for (let e of this.keys()) {
-            entity.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
-        }
-    }
 }
 
 class Observation {
@@ -224,7 +240,11 @@ class Observation {
     run(entity) {
         var visionDistance = entity.Vision.distance;
         var eyePosition = entity.Position.vec;
-        entity.Actor.observe(entity, eyePosition, visionDistance, this.grid);
+        for (let cell of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
+            for (let e of cell.keys()) {
+                entity.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
+            }
+        }
     }
 
     update(action) {

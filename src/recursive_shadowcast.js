@@ -19,57 +19,56 @@ function computeSlope(fromVec, toVec, lateralIndex, depthIndex) {
 }
 
 
-export function detectVisibleArea(entity, eyePosition, viewDistance, grid) {
+export function* detectVisibleArea(eyePosition, viewDistance, grid) {
     let eyeCell = grid.getCart(eyePosition);
     let xMax = grid.width - 1;
     let yMax = grid.height - 1;
     
-    eyeCell.see(entity);
+    yield eyeCell;
 
     //  \|
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, -1, 0,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, -1, 0,
                                     OrdinalDirections.NorthWest, OrdinalDirections.SouthWest,
                                     -1, Vec2.X_IDX, xMax, yMax
     );
     //  |/
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, 0, 1,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, 0, 1,
                                     OrdinalDirections.SouthWest, OrdinalDirections.NorthWest,
                                     -1, Vec2.X_IDX, xMax, yMax
     );
     //  /|
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, -1, 0,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, -1, 0,
                                     OrdinalDirections.SouthWest, OrdinalDirections.NorthWest,
                                     1, Vec2.X_IDX, xMax, yMax
     );
     //  |\
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, 0, 1,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, 0, 1,
                                     OrdinalDirections.NorthWest, OrdinalDirections.SouthWest,
                                     1, Vec2.X_IDX, xMax, yMax
     );
     //  _\
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, -1, 0,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, -1, 0,
                                     OrdinalDirections.NorthWest, OrdinalDirections.NorthEast,
                                     -1, Vec2.Y_IDX, yMax, xMax
     );
     //  "/
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, 0, 1,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, 0, 1,
                                     OrdinalDirections.NorthEast, OrdinalDirections.NorthWest,
                                     -1, Vec2.Y_IDX, yMax, xMax
     );
     //  /_
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, -1, 0,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, -1, 0,
                                     OrdinalDirections.NorthEast, OrdinalDirections.NorthWest,
                                     1, Vec2.Y_IDX, yMax, xMax
     );
     //  \"
-    detectVisibleAreaOctant( entity, eyeCell, viewDistance, grid, 0, 1,
+    yield* detectVisibleAreaOctant( eyeCell, viewDistance, grid, 0, 1,
                                     OrdinalDirections.NorthWest, OrdinalDirections.NorthEast,
                                     1, Vec2.Y_IDX, yMax, xMax
     );
 }
 
-function detectVisibleAreaOctant(
-    entity,
+function* detectVisibleAreaOctant(
     eyeCell,
     viewDistance,
     grid,
@@ -137,7 +136,7 @@ function detectVisibleAreaOctant(
             let cell = grid.getCart(coordIdx);
 
             if (coordIdx.getDistanceSquared(eyeCell.coordinate) < viewDistanceSquared) {
-                cell.see(entity);
+                yield cell;
             }
             
             let currentVisibility = Math.max(visibility - cell.opacity, 0);
@@ -173,6 +172,3 @@ function detectVisibleAreaOctant(
         }
     }
 }
-    
-    
-

@@ -20,10 +20,11 @@ export class Position extends Component {
 Position.type = ComponentTypes.Position;
 
 export class Tile extends Component {
-    constructor(character, colour, zIndex) {
+    constructor(character, colour, backgroundColour, zIndex) {
         super();
         this.character = character;
         this.colour = colour;
+        this.backgroundColour = backgroundColour;
         this.zIndex = zIndex;
     }
 }
