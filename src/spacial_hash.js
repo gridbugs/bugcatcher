@@ -5,7 +5,7 @@ export class SpacialHash extends Grid {
         super(width, height);
         if (Container != undefined) {
             for (let [i, j] of this.coordinates()) {
-                this.set(j, i, new Container());
+                this.set(j, i, new Container(j, i));
             }
         }
     }
@@ -38,8 +38,8 @@ export class AggregateSpacialHash extends SpacialHash {
         super(width, height, Container);
     }
 
-    initialize(predicate, f) {
-        super.initialize(predicate, f);
+    initialize(entities, predicate, f) {
+        super.initialize(entities, predicate, f);
         for (let cell of this) {
             cell.updateAggregate();
         }

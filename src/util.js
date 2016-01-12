@@ -23,3 +23,14 @@ export function mktable(enumObj, obj) {
     }
     return arr;
 }
+
+export function* tableIterator(enumObj, table) {
+    for (let name in enumObj) {
+        let enumValue = enumObj[name];
+        yield [enumValue, table[enumValue]];
+    }
+}
+
+export function constrain(min, x, max) {
+    return Math.min(Math.max(x, min), max);
+}

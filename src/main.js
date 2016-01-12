@@ -3,12 +3,12 @@ import {Vec2} from './vec2.js';
 import {Grid} from './grid.js';
 import {getKey, getKeyCode} from './input.js';
 import {mdelay} from './time.js';
-import {mkenum, mknametable} from './util.js';
-import {CardinalDirections, CardinalVectors} from './direction.js';
+import {mkenum, mknametable, tableIterator} from './util.js';
+import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors} from './direction.js';
 import {Schedule} from './schedule.js';
 import {Entity, EntityMap} from './entity.js';
 import {SpacialHash, AggregateSpacialHash} from './spacial_hash.js';
-import {detectVisibleAreas} from './recursive_shadowcast.js';
+import {detectVisibleArea} from './recursive_shadowcast.js';
 import {
     Position,
     Tile,
@@ -34,10 +34,10 @@ var worldString = [
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
 '& &           #.................#.....................                  &', 
-'&             #........#........#....................#   &   &        & &', 
+'&             #........#........#.@..................#   &   &        & &', 
 '&     #############.####........#....................#             &    &', 
 '&     #................#.............................#           &      &', 
-'&   & #.........................#........@...........#                  &', 
+'&   & #.........................#....................#                  &', 
 '&     #................#........#....................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
@@ -56,6 +56,40 @@ var worldString = [
 '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
 ];
 
+var emptyWorld = [
+'&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                    @                                                  &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&                                                                       &', 
+'&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
+
+];
+
 function makeTree(x, y) {
     return new Entity(new Position(x, y), new Tile('&', 'green', 1), new Solid(), new Opacity(0.5));
 }
@@ -63,7 +97,7 @@ function makeWall(x, y) {
     return new Entity(new Position(x, y), new Tile('#', 'gray', 1), new Solid(), new Opacity(1));
 }
 function makeGrass(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'brown', 0), new Opacity(0));
+    return new Entity(new Position(x, y), new Tile('.', 'darkgreen', 0), new Opacity(0));
 }
 function makeFloor(x, y) {
     return new Entity(new Position(x, y), new Tile('.', 'gray', 0), new Opacity(0));
@@ -71,11 +105,11 @@ function makeFloor(x, y) {
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('@', 'white', 2),
-                        new Actor(detectVisibleAreas, getPlayerAction),
+                        new Actor(detectVisibleArea, getPlayerAction),
                         new PlayerCharacter(),
                         new Collider(),
                         new Memory(),
-                        new Vision(10),
+                        new Vision(20),
                         new Opacity(0.2)
                     );
 }
@@ -200,8 +234,14 @@ class Renderer {
 }
 
 class ObservationEntityMap extends EntityMap {
-    constructor() {
+    constructor(x, y) {
         super();
+        this.coordinate = new Vec2(x, y);
+        this.centre = new Vec2(x + 0.5, y + 0.5);
+        this.corners = new Array(4);
+        for (let [direction, vector] of tableIterator(OrdinalDirections, OrdinalVectors)) {
+            this.corners[direction] = this.centre.add(vector.divide(2));
+        }
         this.maxOpacity = 0;
     }
 
@@ -216,6 +256,12 @@ class ObservationEntityMap extends EntityMap {
     get opacity() {
         return this.maxOpacity;
     }
+
+    see(entity) {
+        for (let e of this.keys()) {
+            entity.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
+        }
+    }
 }
 
 class Observation {
@@ -225,16 +271,16 @@ class Observation {
         this.grid = new AggregateSpacialHash(this.numCols, this.numRows, ObservationEntityMap).initialize(
             entities,
             (e) => {return e.hasComponents(Position, Opacity)},
-            (e) => {return e.Opacity.value}
+            (e) => {
+                return e.Opacity.value
+            }
         );
     }
 
     run(entity) {
         var visionDistance = entity.Vision.distance;
         var eyePosition = entity.Position.vec;
-        for (let e of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
-            entity.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
-        }
+        entity.Actor.observe(entity, eyePosition, visionDistance, this.grid);
     }
 
     update(action) {
@@ -294,7 +340,7 @@ const KeyCodes = {
 
 async function getPlayerAction(entity) {
     while (true) {
-        let code = await getKeyCode();
+        var code = await getKeyCode();
         switch (code) {
         case KeyCodes.Up:
             return new Move(entity, CardinalDirections.North);
@@ -378,7 +424,6 @@ async function gameStep(entity) {
         collision.update(action);
         observation.update(action);
 
-
         observation.run(entity);
         renderer.run(entity);
     }
@@ -389,7 +434,7 @@ async function gameStep(entity) {
 
 async function gameLoop() {
     while (!schedule.empty) {
-        let entry = schedule.pop();
+        var entry = schedule.pop();
         await entry.task();
     }
 }
