@@ -8,6 +8,14 @@ export function mkenum(...names) {
     return obj;
 }
 
+export function mknametable(enumObj) {
+    var arr = [];
+    for (let name in enumObj) {
+        arr[enumObj[name]] = name;
+    }
+    return arr;
+}
+
 export function mktable(enumObj, obj) {
     var arr = new Array(Object.keys(obj).length);
     for (let name in obj) {

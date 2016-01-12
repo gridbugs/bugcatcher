@@ -1,204 +1,25 @@
-import {Heap} from './heap.js';
 import {AvlTree} from './avl_tree.js';
 import {Vec2} from './vec2.js';
 import {Grid} from './grid.js';
 import {getKey, getKeyCode} from './input.js';
 import {mdelay} from './time.js';
-import {mkenum} from './util.js';
-
+import {mkenum, mknametable} from './util.js';
 import {CardinalDirections, CardinalVectors} from './direction.js';
-
-class ScheduleEntry {
-    constructor(task, absoluteTime, sequenceNumber, immediate) {
-        this.task = task;
-        this.absoluteTime = absoluteTime;
-        this.sequenceNumber = sequenceNumber;
-        this.immediate = immediate;
-    }
-}
-
-class Schedule {
-    constructor() {
-        this.absoluteTime = 0;
-        this.sequenceNumber = 0;
-        this.heap = new Heap(Schedule.compare);
-    }
-    scheduleTask(task, relativeTime, immediate = false) {
-        this.heap.insert(new ScheduleEntry(
-            task,
-            this.absoluteTime + relativeTime,
-            this.sequenceNumber,
-            immediate
-        ));
-        ++this.sequenceNumber;
-    }
-
-    peek() {
-        return this.heap.peek();
-    }
-
-    pop() {
-        var entry = this.heap.pop();
-        this.absoluteTime = entry.absoluteTime;
-        return entry;
-    }
-
-    get empty() {
-        return this.heap.empty;
-    }
-}
-Schedule.compare = (a, b) => {
-    if (a.immediate != b.immediate) {
-        return b.immediate - a.immediate;
-    }
-    if (a.absoluteTime != b.absoluteTime) {
-        return a.absoluteTime - b.absoluteTime;
-    }
-    return a.sequenceNumber - b.sequenceNumber;
-};
-
-
-class Entity {
-    constructor(...components) {
-        this.id = Entity.nextId;
-        ++Entity.nextId;
-
-        Entity.table[this.id] = this;
-
-        this.components = {};
-        for (let c of components) {
-            this.addComponent(c);
-        }
-    }
-
-    addComponent(component) {
-        this.components[component.name] = component;
-    }
-
-    removeComponent(name) {
-        delete this.components[name];
-    }
-
-    hasComponent(name) {
-        return this.components[name] != undefined;
-    }
-
-    hasComponents(...names) {
-        for (let name of names) {
-            if (!this.hasComponent(name)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    hasAnyComponent(...names) {
-        for (let name of names) {
-            if (this.hasComponent(name)) {
-                return true;
-            }
-        }
-        return false;
- 
-    }
-}
-Entity.nextId = 0;
-Entity.table = [];
-
-class EntityMap {
-    constructor() {
-        this.array = [];
-        this.size = 0;
-        this.arrayKeys = new Set();
-    }
-    delete(entity) {
-        delete this.array[entity.id];
-        this.arrayKeys.delete(entity.id);
-    }
-    *keys() {
-        for (let i of this.arrayKeys) {
-            yield Entity.table[i];
-        }
-    }
-    *entries() {
-        for (let i of this.arrayKeys) {
-            yield [Entity.table[i], this.array[i]];
-        }
-    }
-    get(entity) {
-        return this.array[entity.id];
-    }
-    set(entity, value) {
-        this.array[entity.id] = value;
-        this.arrayKeys.add(entity.id);
-    }
-}
-
-class Position {
-	constructor(x, y) {
-        this.vec = new Vec2(x, y);
-    }
-    get name() {
-        return 'Position';
-    }
-}
-
-class Tile {
-    constructor(character, colour, zIndex) {
-        this.character = character;
-        this.colour = colour;
-        this.zIndex = zIndex;
-    }
-    get name() {
-        return 'Tile';
-    }
-}
-
-class Actor {
-    constructor(observe, getAction) {
-        this.observe = observe;
-        this.getAction = getAction;
-    }
-    get name() {
-        return 'Actor';
-    }
-}
-
-class Solid {
-    get name() {
-        return 'Solid';
-    }
-}
-
-class Collider {
-    get name() {
-        return 'Collider';
-    }
-}
-
-class PlayerCharacter {
-    get name() {
-        return 'PlayerCharacter';
-    }
-}
-
-class Memory {
-    constructor() {
-        this.lastSeenTimes = new EntityMap();
-    }
-    get name() {
-        return 'Memory';
-    }
-}
-
-class Vision {
-    constructor(distance) {
-        this.distance = distance;
-    }
-    get name() {
-        return 'Vision';
-    }
-}
+import {Schedule} from './schedule.js';
+import {Entity, EntityMap} from './entity.js';
+import {SpacialHash, AggregateSpacialHash} from './spacial_hash.js';
+import {detectVisibleAreas} from './recursive_shadowcast.js';
+import {
+    Position,
+    Tile,
+    Actor,
+    Solid,
+    Collider,
+    PlayerCharacter,
+    Memory,
+    Vision,
+    Opacity
+} from './component.js';
 
 var entities = [];
 
@@ -236,39 +57,47 @@ var worldString = [
 ];
 
 function makeTree(x, y) {
-    return new Entity(new Position(x, y), new Tile('&', 'green', 1), new Solid());
+    return new Entity(new Position(x, y), new Tile('&', 'green', 1), new Solid(), new Opacity(0.5));
 }
 function makeWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', 'gray', 1), new Solid());
+    return new Entity(new Position(x, y), new Tile('#', 'gray', 1), new Solid(), new Opacity(1));
 }
 function makeGrass(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'brown', 0));
+    return new Entity(new Position(x, y), new Tile('.', 'brown', 0), new Opacity(0));
 }
 function makeFloor(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'gray', 0));
+    return new Entity(new Position(x, y), new Tile('.', 'gray', 0), new Opacity(0));
 }
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('@', 'white', 2),
-                        new Actor(observeCircle, getPlayerAction),
+                        new Actor(detectVisibleAreas, getPlayerAction),
                         new PlayerCharacter(),
                         new Collider(),
                         new Memory(),
-                        new Vision(10)
+                        new Vision(10),
+                        new Opacity(0.2)
                     );
 }
 
-function* observeCircle(observer) {
-    var eyePosition = observer.components.Position.vec;
-    var viewDistance = observer.components.Vision.distance;
+function* observeCircle(eyePosition, viewDistance, grid) {
     var viewDistanceSquared = viewDistance * viewDistance;
     for (let entity of entities) {
-        if (entity.hasComponent('Position')) {
-            var entityPosition = entity.components.Position.vec;
+        if (entity.hasComponent(Position)) {
+            var entityPosition = entity.Position.vec;
             var distanceSquared = eyePosition.getDistanceSquared(entityPosition);
             if (distanceSquared <= viewDistanceSquared) {
                 yield entity;
             }
+        }
+    }
+}
+
+function* observeSquare(eyePosition, viewDistance, grid) {
+    for (let i = Math.max(eyePosition.y-viewDistance, 0); i <= Math.min(eyePosition.y+viewDistance, grid.height - 1); ++i) {
+        for (let j = Math.max(eyePosition.x-viewDistance, 0); j <= Math.min(eyePosition.x+viewDistance, grid.width - 1); ++j) {
+            let cell = grid.get(j, i);
+            yield* cell.keys();
         }
     }
 }
@@ -322,7 +151,9 @@ class Renderer {
         this.seq = 0;
     }
 
-    run(memory) {
+    run(entity) {
+
+        var memory = entity.Memory;
 
         ++this.seq;
 
@@ -332,12 +163,12 @@ class Renderer {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         for (let entity of memory.lastSeenTimes.keys()) {
             let lastSeenTime = memory.lastSeenTimes.get(entity);
-            if (entity.hasComponents('Position', 'Tile')) {
-                let vec = entity.components.Position.vec;
+            if (entity.hasComponents(Position, Tile)) {
+                let vec = entity.Position.vec;
                 let entry = this.grid.getCart(vec);
 
                 if (entry.seq != this.seq || entry.entity == null ||
-                    entry.entity.components.Tile.zIndex < entity.components.Tile.zIndex) {
+                    entry.entity.Tile.zIndex < entity.Tile.zIndex) {
 
                     entry.entity = entity;
                     entry.seq = this.seq;
@@ -349,15 +180,15 @@ class Renderer {
         for (let entry of this.grid) {
             let entity = entry.entity;
             if (entity != null && entry.seq == this.seq) {
-                let vec = entity.components.Position.vec;
+                let vec = entity.Position.vec;
                 let colour;
                 if (entry.current) {
-                    colour = entity.components.Tile.colour;
+                    colour = entity.Tile.colour;
                 } else {
                     colour = "#444444";
                 }
                 this.ctx.fillStyle = colour;
-                this.ctx.fillText(entity.components.Tile.character,
+                this.ctx.fillText(entity.Tile.character,
                               vec.x * this.cellWidth + this.yPadding,
                               vec.y * this.cellHeight + this.xPadding
                 );
@@ -368,11 +199,50 @@ class Renderer {
     }
 }
 
+class ObservationEntityMap extends EntityMap {
+    constructor() {
+        super();
+        this.maxOpacity = 0;
+    }
+
+    updateAggregate() {
+        var maxOpacity = 0;
+        for (let opacity of this.values()) {
+            maxOpacity = Math.max(maxOpacity, opacity);
+        }
+        this.maxOpacity =  maxOpacity;
+    }
+
+    get opacity() {
+        return this.maxOpacity;
+    }
+}
+
 class Observation {
     constructor(numCols, numRows) {
         this.numCols = numCols;
         this.numRows = numRows;
-        this.grid = new Grid(this.numCols, this.numRows);
+        this.grid = new AggregateSpacialHash(this.numCols, this.numRows, ObservationEntityMap).initialize(
+            entities,
+            (e) => {return e.hasComponents(Position, Opacity)},
+            (e) => {return e.Opacity.value}
+        );
+    }
+
+    run(entity) {
+        var visionDistance = entity.Vision.distance;
+        var eyePosition = entity.Position.vec;
+        for (let e of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
+            entity.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
+        }
+    }
+
+    update(action) {
+        switch (action.type) {
+        case ActionType.Move:
+            this.grid.updateOnMoveAction(action);
+            break;
+        }
     }
 }
 
@@ -380,27 +250,22 @@ class Collision {
     constructor(numCols, numRows) {
         this.numCols = numCols;
         this.numRows = numRows;
-        this.grid = new Grid(this.numCols, this.numRows);
-        for (let [i, j] of this.grid.coordinates()) {
-            this.grid.set(j, i, new Set());
-        }
-        for (let entity of entities) {
-            if (entity.hasComponent('Position') &&
-                entity.hasAnyComponent('Collider', 'Solid')) {
-
-                let vec = entity.components.Position.vec;
-                this.grid.getCart(vec).add(entity);
+        this.grid = new SpacialHash(this.numCols, this.numRows, EntityMap).initialize(
+            entities,
+            (e) => {
+                return e.hasComponent(Position) &&
+                    e.hasAnyComponent(Collider, Solid)
             }
-        }
+        );
     }
 
     check(action) {
         switch (action.type) {
         case ActionType.Move:
-            if (action.entity.hasComponent('Collider')) {
+            if (action.entity.hasComponent(Collider)) {
                 let toCell = this.grid.getCart(action.toCoord);
-                for (let e of toCell) {
-                    if (e.hasComponent('Solid')) {
+                for (let e of toCell.keys()) {
+                    if (e.hasComponent(Solid)) {
                         action.fail();
                         break;
                     }
@@ -413,6 +278,7 @@ class Collision {
     update(action) {
         switch (action.type) {
         case ActionType.Move:
+            this.grid.updateOnMoveAction(action);
             break;
         }
     }
@@ -462,7 +328,7 @@ class Move extends Action {
         super();
         this.entity = entity;
         this.direction = direction;
-        this.fromCoord = entity.components.Position.vec.clone();
+        this.fromCoord = entity.Position.vec.clone();
         this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
     }
 
@@ -471,13 +337,13 @@ class Move extends Action {
     }
 
     commit() {
-        this.entity.components.Position.vec.set(this.toCoord);
+        this.entity.Position.vec.set(this.toCoord);
     }
 }
 
 function getPlayerCharacter() {
     for (let e of entities) {
-        if (e.hasComponent('PlayerCharacter')) {
+        if (e.hasComponent(PlayerCharacter)) {
             return e;
         }
     }
@@ -489,6 +355,7 @@ var playerCharacter;
 var schedule = new Schedule();
 var renderer;
 var collision;
+var observation;
 
 function scheduleActorTurn(entity, relativeTime = 1) {
     schedule.scheduleTask(async function() {
@@ -498,25 +365,22 @@ function scheduleActorTurn(entity, relativeTime = 1) {
 
 async function gameStep(entity) {
 
-    for (let e of entity.components.Actor.observe(entity)) {
-        entity.components.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
-    }
+    observation.run(entity);
+    renderer.run(entity);
 
-    renderer.run(entity.components.Memory);
-
-    var action = await entity.components.Actor.getAction(entity);
+    var action = await entity.Actor.getAction(entity);
 
     collision.check(action);
 
     if (action.success) {
         action.commit();
+
         collision.update(action);
+        observation.update(action);
 
-        for (let e of entity.components.Actor.observe(entity)) {
-            entity.components.Memory.lastSeenTimes.set(e, schedule.absoluteTime);
-        }
 
-        renderer.run(entity.components.Memory);
+        observation.run(entity);
+        renderer.run(entity);
     }
 
     scheduleActorTurn(entity, 1);
@@ -539,6 +403,7 @@ $(() => {(async function() {
     initWorld();
     playerCharacter = getPlayerCharacter();
     collision = new Collision(WIDTH, HEIGHT);
+    observation = new Observation(WIDTH, HEIGHT);
     scheduleActorTurn(playerCharacter, 0);
 
     await gameLoop();
