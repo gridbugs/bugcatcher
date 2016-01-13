@@ -18,17 +18,21 @@ import {
     PlayerCharacter,
     Memory,
     Vision,
-    Opacity
+    Opacity,
+    Door,
+    DownStairs,
+    UpStairs,
+    OnLevel
 } from './component.js';
 
 import {Observation} from './observation.js';
 import {Level} from './level.js';
 
-import {Move} from './action.js';
+import {Move, CloseDoor, Descend, Ascend} from './action.js';
 
 var entities = [];
 
-var worldString = [
+var surfaceString = [
 '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
 '&                                               &                       &', 
 '&  &             &   &  &&               &              &&              &', 
@@ -38,8 +42,8 @@ var worldString = [
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
-'& &           #.................#.....................                  &', 
-'&             #........#........#.@..................#   &   &        & &', 
+'& &           #.................#....................+                  &', 
+'&             #........#........#.@>.................#   &   &        & &', 
 '&     #############.####........#....................#             &    &', 
 '&     #................#.............................#           &      &', 
 '&   & #.........................#....................#                  &', 
@@ -50,10 +54,10 @@ var worldString = [
 '&  &  #................###############.###############      &           &', 
 '&     #................#...................#                            &', 
 '&     #................#...................#               &   &     &  &', 
-'&     ##################...................#                            &', 
-'&                      #...................#          &                 &', 
-'&   & &  &             #....................      &            &    &   &', 
-'&         &            #...................#       &  &             &   &', 
+'&     ##################...................#            % %%%%          &', 
+'&                      #...................#          & %,,,,%          &', 
+'&   & &  &             #....................      &     %,,,,% &    &   &', 
+'&         &            #...................#       &  & %%%%%%      &   &', 
 '&    &&  & &        &  #...................#        &       &           &', 
 '&     &    &        &  #...................#                  &     &   &', 
 '&      &    &&&        #####################                        &   &', 
@@ -61,11 +65,53 @@ var worldString = [
 '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&', 
 ];
 
+var dungeonString = [
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+'%%%%%%,,,,,,,,,,,,,,,,,,,,,,%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%,,,,,,,,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,,,,,,,,,,,,,,,,,,,,,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,,,,,,,,,,,<,,,,,,,,,,,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,,,,,,,,,,,,,,,,,,,,,,,,,,,,%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+'%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+'%%%%%%,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+];
+
+
+var surfaceLevel;
+var dungeonLevel;
+
 function makeTree(x, y) {
     return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5));
 }
 function makeWall(x, y) {
     return new Entity(new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1));
+}
+function makeDirtWall(x, y) {
+    return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1));
+}
+function makeDirt(x, y) {
+    return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
 }
 function makeGrass(x, y) {
     return new Entity(new Position(x, y), new Tile('.', 'darkgreen', null, 0), new Opacity(0));
@@ -73,7 +119,15 @@ function makeGrass(x, y) {
 function makeFloor(x, y) {
     return new Entity(new Position(x, y), new Tile('.', 'gray', null, 0), new Opacity(0));
 }
-
+function makeDoor(x, y) {
+    return new Entity(new Position(x, y), new Tile('+', '#888888', '#444444', 1), new Opacity(1), new Door(), new Solid());
+}
+function makeUpStairs(x, y) {
+    return new Entity(new Position(x, y), new Tile('<', 'gray', null, 1), new Opacity(0), new UpStairs());
+}
+function makeDownStairs(x, y) {
+    return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
+}
 
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
@@ -83,13 +137,16 @@ function makePlayerCharacter(x, y) {
                         new Collider(),
                         new Memory(),
                         new Vision(20),
-                        new Opacity(0.2)
+                        new Opacity(0.2),
+                        new OnLevel()
                     );
 }
 
-function initWorld() {
-    for (let i = 0; i < worldString.length; ++i) {
-        let line = worldString[i];
+
+function initWorld(str) {
+    var entities = [];
+    for (let i = 0; i < str.length; ++i) {
+        let line = str[i];
         for (let j = 0; j < line.length; ++j) {
             let ch = line[j];
             let entity;
@@ -102,19 +159,37 @@ function initWorld() {
                 entities.push(makeWall(j, i));
                 entities.push(makeFloor(j, i));
                 break;
+            case '+':
+                entities.push(makeDoor(j, i));
+                entities.push(makeFloor(j, i));
+                break;
             case '.':
                 entities.push(makeFloor(j, i));
                 break;
             case ' ':
                 entities.push(makeGrass(j, i));
                 break;
+            case ',':
+                entities.push(makeDirt(j, i));
+                break;
             case '@':
                 entities.push(makeFloor(j, i));
                 entities.push(makePlayerCharacter(j, i));
                 break;
+            case '%':
+                entities.push(makeDirtWall(j, i));
+                entities.push(makeDirt(j, i));
+                break;
+            case '>':
+                entities.push(makeDownStairs(j, i));
+                break;
+            case '<':
+                entities.push(makeUpStairs(j, i));
+                break;
             }
         }
     }
+    return entities;
 }
 
 
@@ -124,10 +199,41 @@ const KeyCodes = {
     Up: 38,
     Right: 39,
     Down: 40,
+    Close: 67,
+    DownStairs: 86,
+    UpStairs: 87
 }
 
 
-async function getPlayerAction(entity) {
+function closeDoor(level, entity) {
+    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.vec)) {
+        for (let e of cell.entities()) {
+            if (e.hasComponent(Door) && e.Door.open) {
+                return new CloseDoor(entity, e);
+            }
+        }
+    }
+    return null;
+}
+
+function ascendStairs(level, entity) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
+    for (let e of cell.entities()) {
+        if (e.hasComponent(UpStairs)) {
+            return new Ascend(entity, e);
+        }
+    }
+}
+function descendStairs(level, entity) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
+    for (let e of cell.entities()) {
+        if (e.hasComponent(DownStairs)) {
+            return new Descend(entity, e);
+        }
+    }
+}
+
+async function getPlayerAction(level, entity) {
     while (true) {
         var code = await getKeyCode();
         switch (code) {
@@ -139,6 +245,25 @@ async function getPlayerAction(entity) {
             return new Move(entity, CardinalDirections.West);
         case KeyCodes.Right:
             return new Move(entity, CardinalDirections.East);
+        case KeyCodes.Close:
+            var action = closeDoor(level, entity);
+            if (action != null) {
+                return action;
+            }
+            break;
+        case KeyCodes.DownStairs:
+            var action = descendStairs(level, entity);
+            if (action != null) {
+                return action;
+            }
+            break;
+        case KeyCodes.UpStairs:
+            var action = ascendStairs(level, entity);
+            if (action != null) {
+                return action;
+            }
+            break;
+ 
         }
     }
 }
@@ -147,7 +272,7 @@ var ActionType = mkenum(
     'Move'
 );
 
-function getPlayerCharacter() {
+function getPlayerCharacter(entities) {
     for (let e of entities) {
         if (e.hasComponent(PlayerCharacter)) {
             return e;
@@ -157,16 +282,45 @@ function getPlayerCharacter() {
     throw new Error('No player character');
 }
 
+async function gameLoop(playerCharacter) {
+    while (true) {
+        await playerCharacter.OnLevel.level.progressSchedule();
+    }
+}
 
 $(() => {(async function() {
     
     const WIDTH = 74
     const HEIGHT = 30
-    initWorld();
 
-    var level = new Level(WIDTH, HEIGHT, entities);
-    var playerCharacter = getPlayerCharacter();
-    level.scheduleActorTurn(playerCharacter, 0);
-    await level.gameLoop();
+    surfaceLevel = new Level(WIDTH, HEIGHT, initWorld(surfaceString));
+    dungeonLevel = new Level(WIDTH, HEIGHT, initWorld(dungeonString));
+
+    (() => {
+        var upStairs, downStairs;
+        for (let entity of dungeonLevel.entities) {
+            if (entity.hasComponent(UpStairs)) {
+                upStairs = entity;
+            }
+        }
+        for (let entity of surfaceLevel.entities) {
+            if (entity.hasComponent(DownStairs)) {
+                downStairs = entity;
+            }
+        }
+
+        upStairs.UpStairs.level = surfaceLevel;
+        upStairs.UpStairs.coordinates = downStairs.Position.vec.clone();
+
+        downStairs.DownStairs.level = dungeonLevel;
+        downStairs.DownStairs.coordinates = upStairs.Position.vec.clone();
+
+    })();
+
+    var playerCharacter = getPlayerCharacter(surfaceLevel.entities);
+    playerCharacter.OnLevel.level = surfaceLevel;
+    surfaceLevel.scheduleActorTurn(playerCharacter, 0);
+
+    await gameLoop(playerCharacter);
 
 })();})

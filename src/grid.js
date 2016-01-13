@@ -1,3 +1,6 @@
+import {Directions, DirectionVectors} from './direction.js';
+import {tableIterator} from './util.js';
+
 export class Grid {
     constructor(width, height) {
         this.width = width;
@@ -41,6 +44,13 @@ export class Grid {
             for (let j = 0; j < this.width; ++j) {
                 yield [i, j];
             }
+        }
+    }
+
+    *iterateNeighbours(coordinate) {
+        for (let [_, vector] of tableIterator(Directions, DirectionVectors)) {
+            var neighbourCoordinate = coordinate.add(vector);
+            yield this.getCart(neighbourCoordinate);
         }
     }
 }

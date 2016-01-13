@@ -38,6 +38,13 @@ export class Schedule {
     get empty() {
         return this.heap.empty;
     }
+
+    hasImmediateTasks() {
+        if (this.empty) {
+            return false;
+        }
+        return this.peek().immediate;
+    }
 }
 Schedule.compare = (a, b) => {
     if (a.immediate != b.immediate) {
@@ -48,5 +55,3 @@ Schedule.compare = (a, b) => {
     }
     return a.sequenceNumber - b.sequenceNumber;
 };
-
-

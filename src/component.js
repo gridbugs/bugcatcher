@@ -1,6 +1,7 @@
 import {Vec2} from './vec2.js';
 import {ComponentTypes, ComponentNames} from './component_type.js';
 import {EntityMap} from './entity.js';
+import {LevelEntityMap} from './level_entity_map.js';
 
 class Component {
     get name() {
@@ -45,13 +46,25 @@ Solid.type = ComponentTypes.Solid;
 export class Collider extends Component {}
 Collider.type = ComponentTypes.Collider;
 
-export class PlayerCharacter extends Component {}
+export class PlayerCharacter extends Component {
+    constructor() {
+        super();
+    }
+}
 PlayerCharacter.type = ComponentTypes.PlayerCharacter;
+
+export class OnLevel extends Component {
+    constructor(level) {
+        super();
+        this.level = level;
+    }
+}
+OnLevel.type = ComponentTypes.OnLevel;
 
 export class Memory extends Component {
     constructor() {
         super();
-        this.lastSeenTimes = new EntityMap();
+        this.lastSeenTimes = new LevelEntityMap();
     }
 }
 Memory.type = ComponentTypes.Memory;
@@ -71,3 +84,29 @@ export class Opacity extends Component {
     }
 }
 Opacity.type = ComponentTypes.Opacity;
+
+export class Door extends Component {
+    constructor(open = false) {
+        super();
+        this.open = open;
+    }
+}
+Door.type = ComponentTypes.Door;
+
+export class DownStairs extends Component {
+    constructor(level, coordinates) {
+        super();
+        this.level = level;
+        this.coordinates = coordinates;
+    }
+}
+DownStairs.type = ComponentTypes.DownStairs;
+
+export class UpStairs extends Component {
+    constructor(level, coordinates) {
+        super();
+        this.level = level;
+        this.coordinates = coordinates;
+    }
+}
+UpStairs.type = ComponentTypes.UpStairs;

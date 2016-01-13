@@ -1,4 +1,5 @@
 import {ComponentNames} from './component_type.js';
+import {IdMap} from './id_map.js';
 
 export class Entity {
     constructor(...components) {
@@ -49,48 +50,22 @@ export class Entity {
 Entity.nextId = 0;
 Entity.table = [];
 
-export class EntityMap {
+export class EntityMap extends IdMap {
     constructor() {
-        this.array = [];
-        this.size = 0;
-        this.arrayKeys = new Set();
-        this.tmpArray = [null, null];
-    }
-    delete(entity) {
-        delete this.array[entity.id];
-        this.arrayKeys.delete(entity.id);
-    }
-    *keys() {
-        for (let i of this.arrayKeys) {
-            yield Entity.table[i];
-        }
+        super(Entity);
     }
     *entities() {
         yield* this.keys();
     }
-    *entries() {
-        for (let i of this.arrayKeys) {
-            this.tmpArray[0] = Entity.table[i];
-            this.tmpArray[1] = this.array[i];
-            yield this.tmpArray;
-        }
+}
+
+export class EntitySet extends EntityMap {
+    constructor(entities) {
+        super();
+        this.initializeAsSet(entities);
     }
-    *values() {
-        for (let i of this.arrayKeys) {
-            yield this.array[i];
-        }
-    }
-    *[Symbol.iteartor]() {
-        yield* this.entries();
-    }
-    get(entity) {
-        return this.array[entity.id];
-    }
-    set(entity, value) {
-        this.array[entity.id] = value;
-        this.arrayKeys.add(entity.id);
-    }
-    add(entity) {
-        this.set(entity, entity);
+
+    *[Symbol.iterator]() {
+        yield* this.keys();
     }
 }

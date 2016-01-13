@@ -9,7 +9,11 @@ export const ComponentTypes = mkenum(
     'PlayerCharacter',
     'Memory',
     'Vision',
-    'Opacity'
+    'Opacity',
+    'Door',
+    'DownStairs',
+    'UpStairs',
+    'OnLevel'
 );
 
 export const ComponentNames = mknametable(ComponentTypes);

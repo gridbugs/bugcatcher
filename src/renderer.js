@@ -35,8 +35,8 @@ export class Renderer {
 
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        for (let entity of memory.lastSeenTimes.keys()) {
-            let lastSeenTime = memory.lastSeenTimes.get(entity);
+        for (let entity of memory.lastSeenTimes.iterateEntities(this.level)) {
+            let lastSeenTime = memory.lastSeenTimes.get(this.level, entity);
             if (entity.hasComponents(Position, Tile)) {
                 let vec = entity.Position.vec;
                 let entry = this.grid.getCart(vec);

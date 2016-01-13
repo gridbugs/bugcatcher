@@ -3,7 +3,7 @@ import {EntityMap} from './entity.js';
 import {AggregateSpacialHash} from './spacial_hash.js';
 import {tableIterator} from './util.js';
 import {OrdinalDirections, OrdinalVectors} from './direction.js';
-import {Position, Opacity} from './component.js';
+import {PlayerCharacter, Position, Opacity} from './component.js';
 import {ActionType} from './action_type.js';
 
 class ObservationEntityMap extends EntityMap {
@@ -51,7 +51,7 @@ export class Observation {
         var eyePosition = entity.Position.vec;
         for (let cell of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
             for (let e of cell.keys()) {
-                entity.Memory.lastSeenTimes.set(e, this.level.time);
+                entity.Memory.lastSeenTimes.set(this.level, e, this.level.time);
             }
         }
     }
@@ -60,6 +60,16 @@ export class Observation {
         switch (action.type) {
         case ActionType.Move:
             this.grid.updateOnMoveAction(action);
+            break;
+        case ActionType.OpenDoor:
+        case ActionType.CloseDoor:
+            let cell = this.grid.getCart(action.door.Position.vec);
+            cell.set(action.door, action.door.Opacity.value);
+            cell.updateAggregate();
+            break;
+        case ActionType.EnterLevel:
+            this.grid.getCart(action.coordinates)
+                .set(action.entity, action.entity.Opacity.value);
             break;
         }
     }
