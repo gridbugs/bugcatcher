@@ -32,7 +32,7 @@ class ObservationEntityMap extends EntityMap {
 
 }
 
-export class Observation {
+export class ObservationSystem {
     constructor(level, entities, numCols, numRows) {
         this.level = level;
         this.numCols = numCols;

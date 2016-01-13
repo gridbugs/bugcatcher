@@ -7,10 +7,10 @@ import {SpacialHash} from './spacial_hash.js';
 import {EntityMap, EntitySet} from './entity.js';
 import {IdMap} from './id_map.js';
 
-import {Renderer} from './renderer.js';
-import {Collision} from './collision.js';
-import {Observation} from './observation.js';
-import {DoorSystem} from './door.js';
+import {RendererSystem} from './renderer_system.js';
+import {CollisionSystem} from './collision_system.js';
+import {ObservationSystem} from './observation_system.js';
+import {DoorSystem} from './door_system.js';
 
 export class Level {
     constructor(width, height, entities) {
@@ -25,9 +25,9 @@ export class Level {
 
         this.schedule = new Schedule();
 
-        this.renderer = new Renderer(this, width, height);
-        this.collision = new Collision(this, this.entities, width, height);
-        this.observation = new Observation(this, this.entities, width, height);
+        this.rendererSystem = new RendererSystem(this, width, height);
+        this.collisionSystem = new CollisionSystem(this, this.entities, width, height);
+        this.observationSystem = new ObservationSystem(this, this.entities, width, height);
         this.doorSystem = new DoorSystem(this, this.entities, width, height);
     }
 
@@ -44,14 +44,14 @@ export class Level {
     }
 
     applyAction(action) {
-        this.collision.check(action);
+        this.collisionSystem.check(action);
         this.doorSystem.check(action);
 
         if (action.success) {
             action.commit();
 
-            this.collision.update(action);
-            this.observation.update(action);
+            this.collisionSystem.update(action);
+            this.observationSystem.update(action);
             this.doorSystem.update(action);
             return true;
         }
@@ -65,8 +65,8 @@ export class Level {
 Level.nextId = 0;
 
 Level.prototype.gameStep = async function(entity) {
-    this.observation.run(entity);
-    this.renderer.run(entity);
+    this.observationSystem.run(entity);
+    this.rendererSystem.run(entity);
 
     var action = await entity.Actor.getAction(this, entity);
 

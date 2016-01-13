@@ -25,7 +25,6 @@ import {
     OnLevel
 } from './component.js';
 
-import {Observation} from './observation.js';
 import {Level} from './level.js';
 
 import {Move, CloseDoor, Descend, Ascend} from './action.js';

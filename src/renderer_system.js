@@ -2,8 +2,8 @@ import {Grid} from './grid.js';
 
 import {Position, Tile} from './component.js';
 
-export class Renderer {
-    constructor(level, numCols, numRows, canvas=Renderer.getDefaultCanvas()) {
+export class RendererSystem {
+    constructor(level, numCols, numRows, canvas=RendererSystem.getDefaultCanvas()) {
         this.level = level;
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
@@ -88,6 +88,6 @@ export class Renderer {
         this.ctx.fill();
     }
 }
-Renderer.getDefaultCanvas = () => {
+RendererSystem.getDefaultCanvas = () => {
     return document.getElementById('canvas');
 }

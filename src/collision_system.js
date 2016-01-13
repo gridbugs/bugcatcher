@@ -4,7 +4,7 @@ import {ActionType} from './action_type.js';
 
 import {Position, Collider, Solid} from './component.js';
 
-export class Collision {
+export class CollisionSystem {
     constructor(level, entities, numCols, numRows) {
         this.level = level;
         this.numCols = numCols;
