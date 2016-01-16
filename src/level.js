@@ -8,10 +8,14 @@ import {EntityMap, EntitySet} from './entity.js';
 import {IdMap} from './id_map.js';
 
 import {RendererSystem} from './renderer_system.js';
+import {HudSystem} from './hud_system.js';
+import {DescriptionSystem} from './description_system.js';
 import {CollisionSystem} from './collision_system.js';
 import {ObservationSystem} from './observation_system.js';
 import {DoorSystem} from './door_system.js';
 import {CombatSystem} from './combat_system.js';
+
+import {PlayerCharacter} from './component.js';
 
 export class Level {
     constructor(width, height, entities) {
@@ -27,6 +31,8 @@ export class Level {
         this.schedule = new Schedule();
 
         this.rendererSystem = new RendererSystem(this, width, height);
+        this.descriptionSystem = new DescriptionSystem(this);
+        this.hudSystem = new HudSystem(this);
         this.collisionSystem = new CollisionSystem(this, this.entities, width, height);
         this.observationSystem = new ObservationSystem(this, this.entities, width, height);
         this.doorSystem = new DoorSystem(this, this.entities, width, height);
@@ -57,6 +63,8 @@ export class Level {
             this.observationSystem.update(action);
             this.doorSystem.update(action);
             this.combatSystem.update(action);
+
+            this.descriptionSystem.run(action);
             return true;
         }
         return false;
@@ -71,6 +79,9 @@ Level.nextId = 0;
 Level.prototype.gameStep = async function(entity) {
     this.observationSystem.run(entity);
     this.rendererSystem.run(entity);
+    if (entity.hasComponent(PlayerCharacter)) {
+        this.hudSystem.run(entity);
+    }
 
     var action = await entity.Actor.getAction(this, entity);
 

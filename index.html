@@ -7,9 +7,51 @@
 
 <script src="output/compiled.js"></script>
 
+<style>
+body {
+    background-color: black;
+    font-family: monospace;
+}
+#canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+#ui {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    left: 800px;
+    bottom: 10px;
+    color: white;
+}
+#hud {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 40px;
+}
+#log {
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    overflow: scroll;
+}
+#message {
+    position: relative;
+}
+</style>
+
 </head>
 <body>
 
 <canvas id="canvas" width=800 height=500></canvas>
+<div id="ui">
+    <div id="hud"></div>
+    <div id="log"></div>
+</div>
 </body>
 </html>

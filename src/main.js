@@ -28,7 +28,8 @@ import {
     Armour,
     Dodge,
     Accuracy,
-    MeleeDamage
+    MeleeDamage,
+    Name
 } from './component.js';
 
 import {Level} from './level.js';
@@ -141,7 +142,8 @@ function makeTargetDummy(x, y) {
                         new Combatant(), 
                         new Health(4), 
                         new Armour(1), 
-                        new Dodge(1)
+                        new Dodge(1),
+                        new Name("target dummy")
                     );
 }
 
@@ -157,10 +159,11 @@ function makePlayerCharacter(x, y) {
                         new OnLevel(),
                         new Combatant(),
                         new Accuracy(2),
-                        new MeleeDamage(2)
+                        new MeleeDamage(2),
+                        new Health(10),
+                        new Armour(1)
                     );
 }
-
 
 function initWorld(str) {
     var entities = [];

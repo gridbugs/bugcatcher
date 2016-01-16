@@ -12,12 +12,14 @@ class Component {
     }
 }
 
-class Statistic extends Component {
+class ValueComponent extends Component {
     constructor(value) {
         super();
         this.value = value;
     }
 }
+
+class Statistic extends ValueComponent {}
 
 export class Position extends Component {
 	constructor(x, y) {
@@ -121,7 +123,12 @@ UpStairs.type = ComponentTypes.UpStairs;
 export class Combatant extends Component {}
 Combatant.type = ComponentTypes.Combatant;
 
-export class Health extends Statistic {}
+export class Health extends Statistic {
+    constructor(value, maxValue = value) {
+        super(value);
+        this.maxValue = maxValue;
+    }
+}
 Health.type = ComponentTypes.Health;
 
 export class Armour extends Statistic {}
@@ -135,3 +142,6 @@ Accuracy.type = ComponentTypes.Accuracy;
 
 export class MeleeDamage extends Statistic {}
 MeleeDamage.type = ComponentTypes.MeleeDamage;
+
+export class Name extends ValueComponent {}
+Name.type = ComponentTypes.Name;

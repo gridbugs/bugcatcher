@@ -9,6 +9,8 @@ import {
 } from './action.js';
 import {ActionType} from './action_type.js';
 
+import {opposingRoll, getStatistic} from './statistics.js';
+
 import {
     Combatant,
     Accuracy,
@@ -17,13 +19,6 @@ import {
     Armour
 } from './component.js';
 
-function opposingRoll(lhs, rhs) {
-    return (Math.random() * lhs) - (Math.random() * rhs);
-}
-
-function getStatistic(entity, statistic) {
-    return entity.getComponent(statistic).value;
-}
 
 export class CombatSystem extends GridSystem {
     constructor(level, entities, numCols, numRows) {

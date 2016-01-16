@@ -146,6 +146,7 @@ export class MeleeAttack extends Action {
     constructor(entity, target) {
         super();
         this.entity = entity;
+        this.attacker = entity;
         this.target = target;
     }
 }
@@ -155,7 +156,9 @@ export class MeleeAttackDodge extends Action {
     constructor(attack) {
         super();
         this.entity = attack.target;
-        this.attack;
+        this.attack = attack;
+        this.attacker = attack.entity;
+        this.target = attack.target;
     }
 }
 MeleeAttackDodge.type = ActionType.MeleeAttackDodge;
@@ -164,6 +167,8 @@ export class MeleeAttackHit extends Action {
     constructor(attack, damage) {
         super();
         this.entity = attack.target;
+        this.attacker = attack.entity;
+        this.target = attack.target;
         this.attack = attack;
         this.damage = damage;
     }
@@ -182,6 +187,8 @@ export class MeleeAttackBlock extends Action {
         super();
         this.entity = attack.target;
         this.attack = attack;
+        this.attacker = attack.entity;
+        this.target = attack.target;
     }
 }
 MeleeAttackBlock.type = ActionType.MeleeAttackBlock;
@@ -191,9 +198,13 @@ export class Die extends Action {
         super();
         this.entity = entity;
         this.attack = attack;
+        this.attacker = attack.entity;
+        this.target = attack.target;
     }
 
     commit() {
-        this.entity.removeComponents(Combatant, Tile);
+        this.entity.removeComponents(Combatant);
+        this.entity.Tile.character = '%';
     }
 }
+Die.type = ActionType.Die;
