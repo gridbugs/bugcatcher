@@ -34,3 +34,9 @@ export function* tableIterator(enumObj, table) {
 export function constrain(min, x, max) {
     return Math.min(Math.max(x, min), max);
 }
+
+export function arraySwap(array, i, j) {
+    var tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+}

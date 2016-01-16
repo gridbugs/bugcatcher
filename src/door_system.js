@@ -1,22 +1,15 @@
-import {SpacialHash} from './spacial_hash.js';
-import {EntityMap} from './entity.js';
+import {GridSystem} from './grid_system.js';
+import {EntitySet} from './entity.js';
 import {ActionType} from './action_type.js';
 
 import {Position, Collider, Door, Solid} from './component.js';
 import {OpenDoor} from './action.js';
 
-export class DoorSystem {
+export class DoorSystem extends GridSystem {
     constructor(level, entities, numCols, numRows) {
-        this.level = level;
-        this.numCols = numCols;
-        this.numRows = numRows;
-        this.grid = new SpacialHash(this.numCols, this.numRows, EntityMap).initialize(
-            entities,
-            (e) => {
-                return e.hasComponent(Position) &&
-                    e.hasAnyComponent(Collider, Door)
-            }
-        );
+        super(level, entities, numCols, numRows, EntitySet, (e) => {
+            return e.hasComponent(Position) && e.hasAnyComponent(Collider, Door);
+        });
     }
 
     check(action) {

@@ -11,13 +11,14 @@ import {RendererSystem} from './renderer_system.js';
 import {CollisionSystem} from './collision_system.js';
 import {ObservationSystem} from './observation_system.js';
 import {DoorSystem} from './door_system.js';
+import {CombatSystem} from './combat_system.js';
 
 export class Level {
     constructor(width, height, entities) {
 
         this.id = Level.nextId++;
 
-        this.entities = new EntitySet(entities);
+        this.entities = new EntitySet().initialize(entities);
         this.entitySpacialHash = new SpacialHash(width, height, EntityMap).initialize(entities);
 
         this.width = width;
@@ -29,6 +30,7 @@ export class Level {
         this.collisionSystem = new CollisionSystem(this, this.entities, width, height);
         this.observationSystem = new ObservationSystem(this, this.entities, width, height);
         this.doorSystem = new DoorSystem(this, this.entities, width, height);
+        this.combatSystem = new CombatSystem(this, this.entities, width, height);
     }
 
     scheduleActorTurn(entity, relativeTime = 1) {
@@ -46,6 +48,7 @@ export class Level {
     applyAction(action) {
         this.collisionSystem.check(action);
         this.doorSystem.check(action);
+        this.combatSystem.check(action);
 
         if (action.success) {
             action.commit();
@@ -53,6 +56,7 @@ export class Level {
             this.collisionSystem.update(action);
             this.observationSystem.update(action);
             this.doorSystem.update(action);
+            this.combatSystem.update(action);
             return true;
         }
         return false;

@@ -13,7 +13,13 @@ export const ComponentTypes = mkenum(
     'Door',
     'DownStairs',
     'UpStairs',
-    'OnLevel'
+    'OnLevel',
+    'Combatant',
+    'Health',
+    'Armour',
+    'Dodge',
+    'Accuracy',
+    'MeleeDamage'
 );
 
 export const ComponentNames = mknametable(ComponentTypes);

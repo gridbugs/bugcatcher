@@ -22,7 +22,13 @@ import {
     Door,
     DownStairs,
     UpStairs,
-    OnLevel
+    OnLevel,
+    Combatant,
+    Health,
+    Armour,
+    Dodge,
+    Accuracy,
+    MeleeDamage
 } from './component.js';
 
 import {Level} from './level.js';
@@ -41,11 +47,11 @@ var surfaceString = [
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
-'& &           #.................#....................+                  &', 
+'& &           #.................#..........t.........+                  &', 
 '&             #........#........#.@>.................#   &   &        & &', 
-'&     #############.####........#....................#             &    &', 
+'&     #############.####........#..........t.........#             &    &', 
 '&     #................#.............................#           &      &', 
-'&   & #.........................#....................#                  &', 
+'&   & #.........................#..........t.........#                  &', 
 '&     #................#........#....................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
@@ -128,6 +134,17 @@ function makeDownStairs(x, y) {
     return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
 }
 
+function makeTargetDummy(x, y) {
+    return new Entity(  new Position(x, y), 
+                        new Tile('t', 'red', null, 2), 
+                        new Opacity(0), new OnLevel(), 
+                        new Combatant(), 
+                        new Health(4), 
+                        new Armour(1), 
+                        new Dodge(1)
+                    );
+}
+
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('@', 'white', null, 2),
@@ -137,7 +154,10 @@ function makePlayerCharacter(x, y) {
                         new Memory(),
                         new Vision(20),
                         new Opacity(0.2),
-                        new OnLevel()
+                        new OnLevel(),
+                        new Combatant(),
+                        new Accuracy(2),
+                        new MeleeDamage(2)
                     );
 }
 
@@ -174,6 +194,10 @@ function initWorld(str) {
             case '@':
                 entities.push(makeFloor(j, i));
                 entities.push(makePlayerCharacter(j, i));
+                break;
+            case 't':
+                entities.push(makeFloor(j, i));
+                entities.push(makeTargetDummy(j, i));
                 break;
             case '%':
                 entities.push(makeDirtWall(j, i));
@@ -314,10 +338,15 @@ $(() => {(async function() {
         downStairs.DownStairs.level = dungeonLevel;
         downStairs.DownStairs.coordinates = upStairs.Position.vec.clone();
 
-    })();
 
+        for (let e of surfaceLevel.entities) {
+            if (e.hasComponent(OnLevel)) {
+                e.OnLevel.level = surfaceLevel;
+            }
+        }
+    })();
+    
     var playerCharacter = getPlayerCharacter(surfaceLevel.entities);
-    playerCharacter.OnLevel.level = surfaceLevel;
     surfaceLevel.scheduleActorTurn(playerCharacter, 0);
 
     await gameLoop(playerCharacter);

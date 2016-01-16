@@ -1,9 +1,3 @@
-function swap(array, i, j) {
-    var tmp = array[i];
-    array[i] = array[j];
-    array[j] = tmp;
-}
-
 export class LeafNode {
     constructor(tree) {
         this.tree = tree;
@@ -80,7 +74,6 @@ export class BranchNode {
 
     delete(key) {
         var cmp = this.compare(key, this.key);
-        console.debug(key, cmp);
         if (cmp < 0) {
             this.left = this.left.delete(key);
         } else if (cmp > 0) {

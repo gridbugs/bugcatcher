@@ -7,5 +7,10 @@ export const ActionType = mkenum(
     'Ascend',
     'Descend',
     'ExitLevel',
-    'EnterLevel'
+    'EnterLevel',
+    'MeleeAttack',
+    'MeleeAttackDodge',
+    'MeleeAttackHit',
+    'MeleeAttackBlock',
+    'Die'
 );

@@ -23,6 +23,11 @@ export class Entity {
         delete this.components[component.type];
         delete this[ComponentNames[component.type]];
     }
+    removeComponents(...components) {
+        for (let c of components) {
+            this.removeComponent(c);
+        }
+    }
 
     hasComponent(component) {
         return this.components[component.type] != undefined;
@@ -46,6 +51,10 @@ export class Entity {
         return false;
  
     }
+
+    getComponent(component) {
+        return this.components[component.type];
+    }
 }
 Entity.nextId = 0;
 Entity.table = [];
@@ -60,9 +69,9 @@ export class EntityMap extends IdMap {
 }
 
 export class EntitySet extends EntityMap {
-    constructor(entities) {
-        super();
+    initialize(entities) {
         this.initializeAsSet(entities);
+        return this;
     }
 
     *[Symbol.iterator]() {

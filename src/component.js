@@ -12,6 +12,13 @@ class Component {
     }
 }
 
+class Statistic extends Component {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+}
+
 export class Position extends Component {
 	constructor(x, y) {
         super();
@@ -21,7 +28,7 @@ export class Position extends Component {
 Position.type = ComponentTypes.Position;
 
 export class Tile extends Component {
-    constructor(character, colour, backgroundColour, zIndex) {
+    constructor(character, colour, backgroundColour, zIndex, bold) {
         super();
         this.character = character;
         this.colour = colour;
@@ -110,3 +117,21 @@ export class UpStairs extends Component {
     }
 }
 UpStairs.type = ComponentTypes.UpStairs;
+
+export class Combatant extends Component {}
+Combatant.type = ComponentTypes.Combatant;
+
+export class Health extends Statistic {}
+Health.type = ComponentTypes.Health;
+
+export class Armour extends Statistic {}
+Armour.type = ComponentTypes.Armour;
+
+export class Dodge extends Statistic {}
+Dodge.type = ComponentTypes.Dodge;
+
+export class Accuracy extends Statistic {}
+Accuracy.type = ComponentTypes.Accuracy;
+
+export class MeleeDamage extends Statistic {}
+MeleeDamage.type = ComponentTypes.MeleeDamage;

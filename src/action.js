@@ -1,6 +1,12 @@
 import {ActionType} from './action_type.js';
 import {CardinalVectors} from './direction.js';
-import {Door, Solid} from './component.js';
+
+import {
+    Door,
+    Solid,
+    Combatant,
+    Tile
+} from './component.js';
 
 class Action {
     constructor() {
@@ -18,6 +24,8 @@ class Action {
     shouldReschedule() {
         return true;
     }
+
+    commit() {}
 }
 
 export class Move extends Action {
@@ -133,3 +141,59 @@ export class EnterLevel extends Action {
     }
 }
 EnterLevel.type = ActionType.EnterLevel;
+
+export class MeleeAttack extends Action {
+    constructor(entity, target) {
+        super();
+        this.entity = entity;
+        this.target = target;
+    }
+}
+MeleeAttack.type = ActionType.MeleeAttack;
+
+export class MeleeAttackDodge extends Action {
+    constructor(attack) {
+        super();
+        this.entity = attack.target;
+        this.attack;
+    }
+}
+MeleeAttackDodge.type = ActionType.MeleeAttackDodge;
+
+export class MeleeAttackHit extends Action {
+    constructor(attack, damage) {
+        super();
+        this.entity = attack.target;
+        this.attack = attack;
+        this.damage = damage;
+    }
+
+    commit() {
+        this.entity.Health.value -= this.damage;
+        if (this.entity.Health.value <= 0) {
+            this.entity.OnLevel.level.scheduleImmediateAction(new Die(this.entity, this.attack));
+        }
+    }
+}
+MeleeAttackHit.type = ActionType.MeleeAttackHit;
+
+export class MeleeAttackBlock extends Action {
+    constructor(attack) {
+        super();
+        this.entity = attack.target;
+        this.attack = attack;
+    }
+}
+MeleeAttackBlock.type = ActionType.MeleeAttackBlock;
+
+export class Die extends Action {
+    constructor(entity, attack) {
+        super();
+        this.entity = entity;
+        this.attack = attack;
+    }
+
+    commit() {
+        this.entity.removeComponents(Combatant, Tile);
+    }
+}

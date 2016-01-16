@@ -1,3 +1,5 @@
+import {arraySwap} from './util.js';
+
 export class Heap {
     constructor(compare) {
         this.compare = compare;
@@ -32,7 +34,7 @@ export class Heap {
             if (this.compare(this.array[parentIndex], this.array[index]) < 0) {
                 break;
             } else {
-                swap(this.array, index, parentIndex);
+                arraySwap(this.array, index, parentIndex);
                 index = parentIndex;
             }
         }
@@ -70,12 +72,12 @@ export class Heap {
                 }
 
                 if (this.compare(this.array[nextIndex], this.array[index]) < 0) {
-                    swap(this.array, index, nextIndex);
+                    arraySwap(this.array, index, nextIndex);
                     index = nextIndex;
                     continue;
                 }
             } else if (leftChildIndex == maxIndex && this.compare(this.array[leftChildIndex], this.array[index]) < 0) {
-                swap(this.array, index, leftChildIndex);
+                arraySwap(this.array, index, leftChildIndex);
             }
 
             break;
