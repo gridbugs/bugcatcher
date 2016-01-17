@@ -82,6 +82,8 @@ Level.prototype.applyAction = function(action) {
         this.doorSystem.update(action);
         this.combatSystem.update(action);
 
+        this.entitySpacialHash.update(action);
+
         this.descriptionSystem.run(action);
 
         return true;

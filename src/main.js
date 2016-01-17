@@ -1,7 +1,7 @@
 import {AvlTree} from './avl_tree.js';
 import {Vec2} from './vec2.js';
 import {Grid} from './grid.js';
-import {getKey, getKeyCode} from './input.js';
+import {getKey, getKeyCode, getChar} from './input.js';
 import {mdelay} from './time.js';
 import {mkenum, mknametable, tableIterator} from './util.js';
 import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors} from './direction.js';
@@ -30,7 +30,9 @@ import {
     Dodge,
     Accuracy,
     MeleeDamage,
-    Name
+    Name,
+    Inventory,
+    Getable
 } from './component.js';
 
 import {Level} from './level.js';
@@ -42,7 +44,9 @@ import {
     Ascend,
     Teleport,
     Walk,
-    Jump
+    Jump,
+    GetItem,
+    DropItem
 } from './action.js';
 
 import {spread} from './spread.js';
@@ -61,7 +65,7 @@ var surfaceString = [
 '&      &      ###################....................#     &          &&&', 
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
-'&             #........#........#....................#             &    &', 
+'&             #........#........#..))((..............#             &    &', 
 '& &           #.................#..........t.........+                  &', 
 '&             #........#........#.@>.................#   &   &        & &', 
 '&     #############.####........#..........t.........#             &    &', 
@@ -149,6 +153,15 @@ function makeDownStairs(x, y) {
     return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
 }
 
+function makeWorkerAntLarvae(x, y) {
+    return new Entity(new Position(x, y), new Tile('(', 'blue', null, 2), new Opacity(0), new Getable(), new Name('worker ant larvae', 'Wo Ant Larvae'));
+}
+
+function makeGrasshopperLarvae(x, y) {
+    return new Entity(new Position(x, y), new Tile('(', 'green', null, 2), new Opacity(0), new Getable(), new Name('grasshopper larvae', 'Gr Hppr Larvae'));
+}
+
+
 function makeTargetDummy(x, y) {
     return new Entity(  new Position(x, y), 
                         new Tile('t', 'red', null, 2), 
@@ -175,7 +188,8 @@ function makePlayerCharacter(x, y) {
                         new Accuracy(2),
                         new MeleeDamage(2),
                         new Health(10),
-                        new Armour(1)
+                        new Armour(1),
+                        new Inventory(8)
                     );
 }
 
@@ -216,6 +230,14 @@ function initWorld(str) {
                 entities.push(makeFloor(j, i));
                 entities.push(makeTargetDummy(j, i));
                 break;
+            case '(':
+                entities.push(makeFloor(j, i));
+                entities.push(makeWorkerAntLarvae(j, i));
+                break;
+            case ')':
+                entities.push(makeFloor(j, i));
+                entities.push(makeGrasshopperLarvae(j, i));
+                break;
             case '%':
                 entities.push(makeDirtWall(j, i));
                 entities.push(makeDirt(j, i));
@@ -243,7 +265,9 @@ const KeyCodes = {
     DownStairs: 86,
     UpStairs: 87,
     Teleport: 65,
-    Jump: 66
+    Jump: 66,
+    Get: 71,
+    Drop: 68
 }
 
 
@@ -272,6 +296,30 @@ function descendStairs(level, entity) {
         if (e.hasComponent(DownStairs)) {
             return new Descend(entity, e);
         }
+    }
+}
+
+function getItem(level, entity) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
+    for (let e of cell.entities()) {
+        if (e.hasComponent(Getable)) {
+            return new GetItem(entity, e);
+        }
+    }
+}
+
+async function dropItem(level, entity) {
+    level.descriptionSystem.printMessage("Drop from which slot (1-8)?");
+    var index = parseInt(await getChar());
+    if (index >= 1 && index <= 8) {
+        var item = entity.Inventory.inventory.get(index);
+        if (item != null) {
+            return new DropItem(entity, index);
+        } else {
+            level.descriptionSystem.printMessage(`No item in slot ${index}.`);
+        }
+    } else {
+        level.descriptionSystem.printMessage("Ignoring");
     }
 }
 
@@ -339,6 +387,18 @@ async function getPlayerAction(level, entity) {
                     break;
                 }
                 throw e;
+            }
+            break;
+        case KeyCodes.Get:
+            var action = getItem(level, entity);
+            if (action != null) {
+                return action;
+            }
+            break;
+        case KeyCodes.Drop:
+            var action = await dropItem(level, entity);
+            if (action != null) {
+                return action;
             }
             break;
         }

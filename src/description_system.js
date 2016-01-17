@@ -82,6 +82,17 @@ export class DescriptionSystem {
                 this.printMessage('You close the door.');
             }
             break;
+        case ActionType.GetItem:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage(`You pick up the ${action.item.Name.fullName}.`);
+            }
+            break;
+        case ActionType.DropItem:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage(`You drop up the ${action.item.Name.fullName}.`);
+            }
+            break;
+
         }
     }
 }

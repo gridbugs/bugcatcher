@@ -1,4 +1,5 @@
 import {Grid} from './grid.js';
+import {ActionType} from './action_type.js';
 
 export class SpacialHash extends Grid {
     constructor(width, height, Container) {
@@ -30,6 +31,24 @@ export class SpacialHash extends Grid {
 
     updateOnMoveAction(move) {
         this.updateOnMove(move.source, move.destination, move.entity);
+    }
+
+    update(action) {
+        let cell;
+        switch (action.type) {
+        case ActionType.JumpPart:
+        case ActionType.Move:
+            this.updateOnMoveAction(action);
+            break;
+        case ActionType.GetItem:
+            cell = this.getCart(action.entity.Position.vec);
+            cell.delete(action.item);
+            break;
+        case ActionType.DropItem:
+            cell = this.getCart(action.entity.Position.vec);
+            cell.add(action.item);
+            break;
+        }
     }
 }
 

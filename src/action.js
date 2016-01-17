@@ -5,7 +5,9 @@ import {
     Door,
     Solid,
     Combatant,
-    Tile
+    Tile,
+    Getable,
+    Position
 } from './component.js';
 
 class Action {
@@ -288,3 +290,33 @@ export class Die extends Action {
     }
 }
 Die.type = ActionType.Die;
+
+export class GetItem extends Action {
+    constructor(entity, item) {
+        super();
+        this.entity = entity;
+        this.item = item;
+    }
+
+    commit() {
+        this.item.removeComponent(Position);
+        this.entity.Inventory.inventory.insert(this.item);
+    }
+}
+GetItem.type = ActionType.GetItem;
+
+export class DropItem extends Action {
+    constructor(entity, index) {
+        super();
+        this.entity = entity;
+        this.index = index;
+        this.item = this.entity.Inventory.inventory.get(index);
+    }
+
+    commit() {
+        this.entity.Inventory.inventory.delete(this.index);
+        var vec = this.entity.Position.vec;
+        this.item.addComponent(new Position(vec.x, vec.y));
+    }
+}
+DropItem.type = ActionType.DropItem;

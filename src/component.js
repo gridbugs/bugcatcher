@@ -2,6 +2,7 @@ import {Vec2} from './vec2.js';
 import {ComponentTypes, ComponentNames} from './component_type.js';
 import {EntityMap} from './entity.js';
 import {LevelEntityMap} from './level_entity_map.js';
+import {NumericInventory} from './numeric_inventory.js';
 
 class Component {
     get name() {
@@ -143,5 +144,23 @@ Accuracy.type = ComponentTypes.Accuracy;
 export class MeleeDamage extends Statistic {}
 MeleeDamage.type = ComponentTypes.MeleeDamage;
 
-export class Name extends ValueComponent {}
+export class Name extends Component {
+    constructor(fullName, shortName = fullName) {
+        super();
+        this.fullName = fullName;
+        this.shortName = shortName;
+        this.value = fullName;
+    }
+}
 Name.type = ComponentTypes.Name;
+
+export class Inventory extends Component {
+    constructor(numSlots) {
+        super();
+        this.inventory = new NumericInventory(numSlots);
+    }
+}
+Inventory.type = ComponentTypes.Inventory;
+
+export class Getable extends Component {}
+Getable.type = ComponentTypes.Getable;
