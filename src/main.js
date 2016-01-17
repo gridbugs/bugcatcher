@@ -280,7 +280,7 @@ var teleportChooser, jumpChooser, playerCharacter;
 function canSee(entity, vector) {
     var level = entity.OnLevel.level;
     for (let e of level.entitySpacialHash.getCart(vector)) {
-        if (entity.Memory.lastSeenTimes.get(level, e) == level.time) {
+        if (entity.Memory.lastSeenTimes.get(level, e) == level.turn) {
             return true;
         }
     }
@@ -405,8 +405,11 @@ $(() => {(async function() {
     })();
     
     playerCharacter = getPlayerCharacter(surfaceLevel.entities);
+
     surfaceLevel.scheduleActorTurn(playerCharacter, 0);
 
+    surfaceLevel.setPlayerCharacter(playerCharacter);
+    dungeonLevel.setPlayerCharacter(playerCharacter);
 
     await gameLoop(playerCharacter);
 

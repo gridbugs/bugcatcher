@@ -3,7 +3,7 @@ import {EntityMap} from './entity.js';
 import {AggregateSpacialHash} from './spacial_hash.js';
 import {tableIterator} from './util.js';
 import {OrdinalDirections, OrdinalVectors} from './direction.js';
-import {PlayerCharacter, Position, Opacity} from './component.js';
+import {PlayerCharacter, Position, Opacity, Vision} from './component.js';
 import {ActionType} from './action_type.js';
 
 class ObservationEntityMap extends EntityMap {
@@ -47,11 +47,13 @@ export class ObservationSystem {
     }
 
     run(entity) {
-        var visionDistance = entity.Vision.distance;
-        var eyePosition = entity.Position.vec;
-        for (let cell of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
-            for (let e of cell.keys()) {
-                entity.Memory.lastSeenTimes.set(this.level, e, this.level.time);
+        if (entity.hasComponent(Vision)) {
+            var visionDistance = entity.Vision.distance;
+            var eyePosition = entity.Position.vec;
+            for (let cell of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
+                for (let e of cell.keys()) {
+                    entity.Memory.lastSeenTimes.set(this.level, e, this.level.turn);
+                }
             }
         }
     }

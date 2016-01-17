@@ -16,8 +16,11 @@ export class GridSystem {
     }
 
     updateMoveAction(action) {
-        if (action.type == ActionType.Move) {
+        switch (action.type) {
+        case ActionType.JumpPart:
+        case ActionType.Move:
             this.grid.updateOnMoveAction(action);
+            break;
         }
     }
 

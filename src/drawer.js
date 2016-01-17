@@ -145,7 +145,7 @@ export class Drawer {
                     break;
                 }
                 let lastSeenTime = memory.lastSeenTimes.get(level, entity);
-                if (lastSeenTime != level.time) {
+                if (lastSeenTime != level.turn) {
                     solid = true;
                     break;
                 }
@@ -170,7 +170,7 @@ export class Drawer {
                         break;
                     }
                     let lastSeenTime = memory.lastSeenTimes.get(level, entity);
-                    if (lastSeenTime != level.time) {
+                    if (lastSeenTime != level.turn) {
                         solid = true;
                         break;
                     }

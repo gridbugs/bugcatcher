@@ -92,7 +92,7 @@ export class JumpPart extends Action {
         this.jump = jump;
         this.index = index;
 
-        this.source = this.entity.Position.vec;
+        this.source = this.entity.Position.vec.clone();
         this.destination = this.jump.path.absoluteArray[this.index];
     }
 

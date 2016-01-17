@@ -35,7 +35,7 @@ export class RendererSystem {
 
                     entry.entity = entity;
                     entry.seq = this.seq;
-                    entry.current = lastSeenTime == this.level.time;
+                    entry.current = lastSeenTime == this.level.turn;
                 }
             }
         }

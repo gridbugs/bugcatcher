@@ -39,6 +39,10 @@ export class Level {
         this.combatSystem = new CombatSystem(this, this.entities, width, height);
     }
 
+    setPlayerCharacter(playerCharacter) {
+        this.playerCharacter = playerCharacter;
+    }
+
     scheduleActorTurn(entity, relativeTime = 1) {
         this.schedule.scheduleTask(async () => {
             await this.gameStep(entity);
@@ -49,16 +53,18 @@ export class Level {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
             if (action.direct) {
-                console.debug('aaaa', this.time);
-                this.observationSystem.run(action.entity);
-                this.rendererSystem.run(action.entity);
-//                await mdelay(100);
+                this.observationSystem.run(this.playerCharacter);
+                this.rendererSystem.run(this.playerCharacter);
+                await mdelay(relativeTime);
             }
         }, relativeTime, /* immediate */ true);
     }
 
     get time() {
         return this.schedule.absoluteTime;
+    }
+    get turn() {
+        return this.schedule.sequenceNumber;
     }
 }
 Level.nextId = 0;
@@ -86,7 +92,6 @@ Level.prototype.applyAction = function(action) {
 Level.prototype.gameStep = async function(entity) {
     this.observationSystem.run(entity);
     this.rendererSystem.run(entity);
-    console.debug('bbbb', this.time);
     if (entity.hasComponent(PlayerCharacter)) {
         this.hudSystem.run(entity);
     }
@@ -99,8 +104,6 @@ Level.prototype.gameStep = async function(entity) {
         if (action.direct) {
             this.observationSystem.run(entity);
             this.rendererSystem.run(entity);
-            console.debug('ccc');
-            await mdelay(100);
         }
         if (!action.shouldReschedule()) {
             return;
