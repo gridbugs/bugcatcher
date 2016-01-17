@@ -1,20 +1,11 @@
 import {Grid} from './grid.js';
+import {getDefaultDrawer} from './drawer.js';
 
 import {Position, Tile} from './component.js';
 
 export class RendererSystem {
-    constructor(level, numCols, numRows, canvas=RendererSystem.getDefaultCanvas()) {
+    constructor(level, numCols, numRows, drawer = getDefaultDrawer()) {
         this.level = level;
-        this.canvas = canvas;
-        this.ctx = this.canvas.getContext('2d');
-        this.fontSize = 16;
-        this.xPadding = 0;
-        this.yPadding = 20;
-        this.xBackgroundPadding = 0;
-        this.yBackgroundPadding = -12;
-        this.ctx.font = `${this.fontSize}px Monospace`;
-        this.cellWidth = this.ctx.measureText('@').width;
-        this.cellHeight = this.fontSize;
         this.numCols = numCols;
         this.numRows = numRows;
         this.grid = new Grid(this.numCols, this.numRows);
@@ -23,6 +14,8 @@ export class RendererSystem {
             this.grid.set(j, i, {seq: 0, entity: null, current: false});
         }
         this.seq = 0;
+
+        this.drawer = drawer;
     }
 
     run(entity) {
@@ -31,10 +24,6 @@ export class RendererSystem {
 
         ++this.seq;
 
-        this.ctx.beginPath();
-
-        this.ctx.fillStyle = "black";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         for (let entity of memory.lastSeenTimes.iterateEntities(this.level)) {
             let lastSeenTime = memory.lastSeenTimes.get(this.level, entity);
             if (entity.hasComponents(Position, Tile)) {
@@ -51,43 +40,28 @@ export class RendererSystem {
             }
         }
 
+        this.drawer.begin();
         for (let entry of this.grid) {
             let entity = entry.entity;
             if (entity != null && entry.seq == this.seq) {
                 let vec = entity.Position.vec;
                 let colour;
-                let backgroundColour;
+                let backgroundColour = null;
                 if (entry.current) {
                     colour = entity.Tile.colour;
                     backgroundColour = entity.Tile.backgroundColour;
-                    if (backgroundColour == null) {
-                        backgroundColour = 'rgba(0, 0, 0, 0)';
-                    }
                 } else {
-                    backgroundColour = entity.Tile.backgroundColour;
-                    if (backgroundColour == null) {
-                        backgroundColour = 'rgba(0, 0, 0, 0)';
+                    if (entity.Tile.backgroundColour == null) {
                         colour = this.unseenColour;
                     } else {
                         colour = 'black';
                         backgroundColour = this.unseenColour;
                     }
-
                 }
-                this.ctx.fillStyle = backgroundColour;
-
-                let x = vec.x * this.cellWidth + this.xPadding;
-                let y = vec.y * this.cellHeight + this.yPadding;
-
-                this.ctx.fillRect(x + this.xBackgroundPadding, y + this.yBackgroundPadding, this.cellWidth, this.cellHeight);
-                this.ctx.fillStyle = colour;
-                this.ctx.fillText(entity.Tile.character, x, y);
+                this.drawer.setTile(vec.x, vec.y, entity.Tile.character, colour, backgroundColour);
             }
         }
+        this.drawer.draw();
 
-        this.ctx.fill();
     }
-}
-RendererSystem.getDefaultCanvas = () => {
-    return document.getElementById('canvas');
 }

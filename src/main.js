@@ -9,6 +9,7 @@ import {Schedule} from './schedule.js';
 import {Entity, EntityMap} from './entity.js';
 import {SpacialHash, AggregateSpacialHash} from './spacial_hash.js';
 import {detectVisibleArea} from './recursive_shadowcast.js';
+import {initializeDefaultDrawer}  from './drawer.js';
 import {
     Position,
     Tile,
@@ -315,9 +316,11 @@ async function gameLoop(playerCharacter) {
 }
 
 $(() => {(async function() {
-    
+ 
     const WIDTH = 74
     const HEIGHT = 30
+    
+    initializeDefaultDrawer(WIDTH, HEIGHT, document.getElementById("canvas"));
 
     surfaceLevel = new Level(WIDTH, HEIGHT, initWorld(surfaceString));
     dungeonLevel = new Level(WIDTH, HEIGHT, initWorld(dungeonString));
