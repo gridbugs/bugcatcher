@@ -29,7 +29,7 @@ export class SpacialHash extends Grid {
     }
 
     updateOnMoveAction(move) {
-        this.updateOnMove(move.fromCoord, move.toCoord, move.entity);
+        this.updateOnMove(move.source, move.destination, move.entity);
     }
 }
 

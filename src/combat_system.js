@@ -29,7 +29,7 @@ export class CombatSystem extends GridSystem {
  
     handleMove(action) {
         if (action.entity.hasComponent(Combatant)) {
-            let toCell = this.grid.getCart(action.toCoord);
+            let toCell = this.grid.getCart(action.destination);
             for (let e of toCell.keys()) {
                 if (e.hasComponent(Combatant)) {
                     action.fail();

@@ -16,7 +16,7 @@ export class DoorSystem extends GridSystem {
         switch (action.type) {
         case ActionType.Move:
             if (action.entity.hasComponent(Collider)) {
-                let toCell = this.grid.getCart(action.toCoord);
+                let toCell = this.grid.getCart(action.destination);
                 for (let e of toCell.keys()) {
                     if (e.hasComponents(Door, Solid)) {
                         action.fail();

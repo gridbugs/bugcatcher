@@ -35,7 +35,14 @@ import {
 
 import {Level} from './level.js';
 
-import {Move, CloseDoor, Descend, Ascend} from './action.js';
+import {
+    Move,
+    CloseDoor,
+    Descend,
+    Ascend,
+    Jump,
+    Walk
+} from './action.js';
 
 import {spread} from './spread.js';
 import {Path} from './path.js';
@@ -273,13 +280,13 @@ async function getPlayerAction(level, entity) {
         var code = await getKeyCode();
         switch (code) {
         case KeyCodes.Up:
-            return new Move(entity, CardinalDirections.North);
+            return new Walk(entity, CardinalDirections.North);
         case KeyCodes.Down:
-            return new Move(entity, CardinalDirections.South);
+            return new Walk(entity, CardinalDirections.South);
         case KeyCodes.Left:
-            return new Move(entity, CardinalDirections.West);
+            return new Walk(entity, CardinalDirections.West);
         case KeyCodes.Right:
-            return new Move(entity, CardinalDirections.East);
+            return new Walk(entity, CardinalDirections.East);
         case KeyCodes.Close:
             var action = closeDoor(level, entity);
             if (action != null) {
@@ -301,7 +308,7 @@ async function getPlayerAction(level, entity) {
         case KeyCodes.Ability:
             try {
                 var vector = await cellChooser.getVector(playerCharacter.Position.vec, playerCharacter);
-                console.debug(vector);
+                return new Jump(entity, vector);
             } catch (e) {
                 if (e instanceof InputCancelled) {
                     break;

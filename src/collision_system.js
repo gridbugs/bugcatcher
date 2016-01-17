@@ -14,8 +14,9 @@ export class CollisionSystem extends GridSystem {
     check(action) {
         switch (action.type) {
         case ActionType.Move:
+            console.debug(action);
             if (action.entity.hasComponent(Collider)) {
-                let toCell = this.grid.getCart(action.toCoord);
+                let toCell = this.grid.getCart(action.destination);
                 for (let e of toCell.keys()) {
                     if (e.hasComponent(Solid)) {
                         action.fail();

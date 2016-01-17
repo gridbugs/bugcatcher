@@ -28,17 +28,49 @@ class Action {
     commit() {}
 }
 
-export class Move extends Action {
+export class Walk extends Action {
     constructor(entity, direction) {
         super();
         this.entity = entity;
         this.direction = direction;
         this.fromCoord = entity.Position.vec.clone();
         this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
+        console.debug(this);
     }
 
     commit() {
-        this.entity.Position.vec.set(this.toCoord);
+        this.entity.OnLevel.level.scheduleImmediateAction(
+            new Move(this.entity, this.toCoord)
+        );
+    }
+}
+Walk.type = ActionType.Walk;
+
+export class Jump extends Action {
+    constructor(entity, destination) {
+        super();
+        this.entity = entity;
+        this.destination = destination;
+    }
+
+    commit() {
+        this.entity.OnLevel.level.scheduleImmediateAction(
+            new Move(this.entity, this.destination)
+        );
+    }
+}
+Jump.type = ActionType.Jump;
+
+export class Move extends Action {
+    constructor(entity, destination) {
+        super();
+        this.entity = entity;
+        this.destination = destination;
+        this.source = entity.Position.vec.clone();
+    }
+
+    commit() {
+        this.entity.Position.vec.set(this.destination);
     }
 }
 Move.type = ActionType.Move;
