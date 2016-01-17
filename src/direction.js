@@ -1,5 +1,5 @@
 import {Vec2} from './vec2.js';
-import {mkenum, mktable} from './util.js';
+import {mkenum, mktable, mknametable} from './util.js';
 
 export const CardinalDirections = mkenum(
     'North',
@@ -50,3 +50,5 @@ export const DirectionVectors = mktable(Directions, {
     West:       new Vec2(-1, 0),
     NorthWest:  new Vec2(-1, -1)
 });
+
+export const DirectionNames = mknametable(Directions);

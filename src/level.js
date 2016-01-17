@@ -23,7 +23,7 @@ export class Level {
         this.id = Level.nextId++;
 
         this.entities = new EntitySet().initialize(entities);
-        this.entitySpacialHash = new SpacialHash(width, height, EntityMap).initialize(entities);
+        this.entitySpacialHash = new SpacialHash(width, height, EntitySet).initialize(entities);
 
         this.width = width;
         this.height = height;

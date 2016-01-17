@@ -31,6 +31,14 @@ export class Grid {
         return this.array;
     }
 
+    hasCoordinate(x, y) {
+        return x >= 0 && y >= 0 && x < this.width && y < this.height;
+    }
+
+    hasCoordinateCart(vec) {
+        return this.hasCoordinate(vec.x, vec.y);
+    }
+
     *[Symbol.iterator]() {
         for (let row of this.array) {
             for (let x of row) {

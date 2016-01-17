@@ -9,7 +9,7 @@ import {Schedule} from './schedule.js';
 import {Entity, EntityMap} from './entity.js';
 import {SpacialHash, AggregateSpacialHash} from './spacial_hash.js';
 import {detectVisibleArea} from './recursive_shadowcast.js';
-import {initializeDefaultDrawer}  from './drawer.js';
+import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
 import {
     Position,
     Tile,
@@ -36,6 +36,11 @@ import {
 import {Level} from './level.js';
 
 import {Move, CloseDoor, Descend, Ascend} from './action.js';
+
+import {spread} from './spread.js';
+import {Path} from './path.js';
+import {VectorChooser} from './vector_chooser.js';
+import {InputCancelled} from './exception.js';
 
 var entities = [];
 
@@ -228,7 +233,8 @@ const KeyCodes = {
     Down: 40,
     Close: 67,
     DownStairs: 86,
-    UpStairs: 87
+    UpStairs: 87,
+    Ability: 65
 }
 
 
@@ -260,6 +266,8 @@ function descendStairs(level, entity) {
     }
 }
 
+var cellChooser, playerCharacter;
+
 async function getPlayerAction(level, entity) {
     while (true) {
         var code = await getKeyCode();
@@ -290,14 +298,20 @@ async function getPlayerAction(level, entity) {
                 return action;
             }
             break;
- 
+        case KeyCodes.Ability:
+            try {
+                var vector = await cellChooser.getVector(playerCharacter.Position.vec, playerCharacter);
+                console.debug(vector);
+            } catch (e) {
+                if (e instanceof InputCancelled) {
+                    break;
+                }
+                throw new Error();
+            }
+            break;
         }
     }
 }
-
-var ActionType = mkenum(
-    'Move'
-);
 
 function getPlayerCharacter(entities) {
     for (let e of entities) {
@@ -325,6 +339,11 @@ $(() => {(async function() {
     surfaceLevel = new Level(WIDTH, HEIGHT, initWorld(surfaceString));
     dungeonLevel = new Level(WIDTH, HEIGHT, initWorld(dungeonString));
 
+    var transparent = 'rgba(0, 0, 0, 0)';
+    var lightYellow = 'rgba(255, 255, 0, 0.25)';
+    var yellow = 'rgba(255, 255, 0, 1)';
+    cellChooser = new VectorChooser(yellow, true, lightYellow, transparent, true, lightYellow, true);
+
     (() => {
         var upStairs, downStairs;
         for (let entity of dungeonLevel.entities) {
@@ -344,16 +363,17 @@ $(() => {(async function() {
         downStairs.DownStairs.level = dungeonLevel;
         downStairs.DownStairs.coordinates = upStairs.Position.vec.clone();
 
-
         for (let e of surfaceLevel.entities) {
             if (e.hasComponent(OnLevel)) {
                 e.OnLevel.level = surfaceLevel;
             }
         }
+
     })();
     
-    var playerCharacter = getPlayerCharacter(surfaceLevel.entities);
+    playerCharacter = getPlayerCharacter(surfaceLevel.entities);
     surfaceLevel.scheduleActorTurn(playerCharacter, 0);
+
 
     await gameLoop(playerCharacter);
 
