@@ -27,6 +27,18 @@ export class DoorSystem extends GridSystem {
                 }
             }
             break;
+        case ActionType.JumpPart:
+            if (action.entity.hasComponent(Collider)) {
+                let toCell = this.grid.getCart(action.destination);
+                for (let e of toCell.keys()) {
+                    if (e.hasComponents(Door, Solid)) {
+                        action.fail();
+                        break;
+                    }
+                }
+            }
+            break;
+
         }
     }
 

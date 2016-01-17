@@ -65,6 +65,18 @@ export class CombatSystem extends GridSystem {
         case ActionType.MeleeAttack:
             this.handleMeleeAttack(action);
             break;
+        case ActionType.JumpPart:
+            if (action.entity.hasComponent(Combatant)) {
+                let toCell = this.grid.getCart(action.destination);
+                for (let e of toCell.keys()) {
+                    if (e.hasComponents(Combatant)) {
+                        action.fail();
+                        break;
+                    }
+                }
+            }
+            break;
+
        }
     }
 }

@@ -14,5 +14,7 @@ export const ActionType = mkenum(
     'MeleeAttackBlock',
     'Die',
     'Walk',
-    'Jump'
+    'Teleport',
+    'Jump',
+    'JumpPart'
 );

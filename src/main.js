@@ -40,8 +40,9 @@ import {
     CloseDoor,
     Descend,
     Ascend,
-    Jump,
-    Walk
+    Teleport,
+    Walk,
+    Jump
 } from './action.js';
 
 import {spread} from './spread.js';
@@ -241,7 +242,8 @@ const KeyCodes = {
     Close: 67,
     DownStairs: 86,
     UpStairs: 87,
-    Ability: 65
+    Teleport: 65,
+    Jump: 66
 }
 
 
@@ -273,7 +275,17 @@ function descendStairs(level, entity) {
     }
 }
 
-var cellChooser, playerCharacter;
+var teleportChooser, jumpChooser, playerCharacter;
+
+function canSee(entity, vector) {
+    var level = entity.OnLevel.level;
+    for (let e of level.entitySpacialHash.getCart(vector)) {
+        if (entity.Memory.lastSeenTimes.get(level, e) == level.time) {
+            return true;
+        }
+    }
+    return false;
+}
 
 async function getPlayerAction(level, entity) {
     while (true) {
@@ -305,15 +317,28 @@ async function getPlayerAction(level, entity) {
                 return action;
             }
             break;
-        case KeyCodes.Ability:
+        case KeyCodes.Teleport:
             try {
-                var vector = await cellChooser.getVector(playerCharacter.Position.vec, playerCharacter);
-                return new Jump(entity, vector);
+                var vector = await teleportChooser.getVector(playerCharacter.Position.vec, playerCharacter);
+                if (canSee(playerCharacter, vector)) {
+                    return new Teleport(entity, vector);
+                }
             } catch (e) {
                 if (e instanceof InputCancelled) {
                     break;
                 }
-                throw new Error();
+                throw e;
+            }
+            break;
+        case KeyCodes.Jump:
+            try {
+                var path = await jumpChooser.getPath(playerCharacter.Position.vec, playerCharacter);
+                return new Jump(entity, path);
+            } catch (e) {
+                if (e instanceof InputCancelled) {
+                    break;
+                }
+                throw e;
             }
             break;
         }
@@ -349,7 +374,8 @@ $(() => {(async function() {
     var transparent = 'rgba(0, 0, 0, 0)';
     var lightYellow = 'rgba(255, 255, 0, 0.25)';
     var yellow = 'rgba(255, 255, 0, 1)';
-    cellChooser = new VectorChooser(yellow, true, lightYellow, transparent, true, lightYellow, true);
+    teleportChooser = new VectorChooser(yellow, true, transparent, transparent, true, transparent, true);
+    jumpChooser = new VectorChooser(yellow, true, lightYellow, transparent, true, transparent, true);
 
     (() => {
         var upStairs, downStairs;

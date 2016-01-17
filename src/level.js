@@ -45,29 +45,16 @@ export class Level {
         }, relativeTime);
     }
 
-    scheduleImmediateAction(action, relativeTime = 1) {
-        this.schedule.scheduleTask(() => {
+    scheduleImmediateAction(action, relativeTime = 0) {
+        this.schedule.scheduleTask(async () => {
             this.applyAction(action);
+            if (action.direct) {
+                console.debug('aaaa', this.time);
+                this.observationSystem.run(action.entity);
+                this.rendererSystem.run(action.entity);
+//                await mdelay(100);
+            }
         }, relativeTime, /* immediate */ true);
-    }
-
-    applyAction(action) {
-        this.collisionSystem.check(action);
-        this.doorSystem.check(action);
-        this.combatSystem.check(action);
-
-        if (action.success) {
-            action.commit();
-
-            this.collisionSystem.update(action);
-            this.observationSystem.update(action);
-            this.doorSystem.update(action);
-            this.combatSystem.update(action);
-
-            this.descriptionSystem.run(action);
-            return true;
-        }
-        return false;
     }
 
     get time() {
@@ -76,9 +63,30 @@ export class Level {
 }
 Level.nextId = 0;
 
+Level.prototype.applyAction = function(action) {
+    this.collisionSystem.check(action);
+    this.doorSystem.check(action);
+    this.combatSystem.check(action);
+
+    if (action.success) {
+        action.commit();
+
+        this.collisionSystem.update(action);
+        this.observationSystem.update(action);
+        this.doorSystem.update(action);
+        this.combatSystem.update(action);
+
+        this.descriptionSystem.run(action);
+
+        return true;
+    }
+    return false;
+}
+
 Level.prototype.gameStep = async function(entity) {
     this.observationSystem.run(entity);
     this.rendererSystem.run(entity);
+    console.debug('bbbb', this.time);
     if (entity.hasComponent(PlayerCharacter)) {
         this.hudSystem.run(entity);
     }
@@ -87,15 +95,24 @@ Level.prototype.gameStep = async function(entity) {
 
     await mdelay(1);
 
-    if (this.applyAction(action) && !action.shouldReschedule()) {
-        return;
+    if (this.applyAction(action)) {
+        if (action.direct) {
+            this.observationSystem.run(entity);
+            this.rendererSystem.run(entity);
+            console.debug('ccc');
+            await mdelay(100);
+        }
+        if (!action.shouldReschedule()) {
+            return;
+        }
     }
 
     this.scheduleActorTurn(entity);
 }
 
 Level.prototype.progressSchedule = async function() {
-    await this.schedule.pop().task();
+    var entry = this.schedule.pop();
+    await entry.task();
 }
 
 Level.prototype.flushImmediate = async function() {

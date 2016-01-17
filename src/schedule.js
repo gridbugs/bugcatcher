@@ -31,7 +31,9 @@ export class Schedule {
 
     pop() {
         var entry = this.heap.pop();
-        this.absoluteTime = entry.absoluteTime;
+        if (!entry.immediate) {
+            this.absoluteTime = entry.absoluteTime;
+        }
         return entry;
     }
 

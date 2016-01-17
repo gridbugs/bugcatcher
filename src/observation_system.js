@@ -71,6 +71,10 @@ export class ObservationSystem {
             this.grid.getCart(action.coordinates)
                 .set(action.entity, action.entity.Opacity.value);
             break;
+        case ActionType.JumpPart:
+            this.grid.getCart(action.destination)
+                .set(action.entity, action.entity.Opacity.value);
+            break;
         }
     }
 }

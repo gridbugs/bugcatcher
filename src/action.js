@@ -17,6 +17,10 @@ class Action {
         return this.constructor.type;
     }
 
+    get direct() {
+        return true;
+    }
+
     fail() {
         this.success = false;
     }
@@ -28,14 +32,19 @@ class Action {
     commit() {}
 }
 
-export class Walk extends Action {
+export class IndirectAction extends Action {
+    get direct() {
+        return false;
+    }
+}
+
+export class Walk extends IndirectAction {
     constructor(entity, direction) {
         super();
         this.entity = entity;
         this.direction = direction;
         this.fromCoord = entity.Position.vec.clone();
         this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
-        console.debug(this);
     }
 
     commit() {
@@ -46,7 +55,7 @@ export class Walk extends Action {
 }
 Walk.type = ActionType.Walk;
 
-export class Jump extends Action {
+export class Teleport extends Action {
     constructor(entity, destination) {
         super();
         this.entity = entity;
@@ -59,7 +68,46 @@ export class Jump extends Action {
         );
     }
 }
+Teleport.type = ActionType.Jump;
+
+export class Jump extends Action {
+    constructor(entity, path) {
+        super();
+        this.entity = entity;
+        this.path = path;
+    }
+
+    commit() {
+        this.entity.OnLevel.level.scheduleImmediateAction(
+            new JumpPart(this.entity, this, 1)
+        );
+    }
+}
 Jump.type = ActionType.Jump;
+
+export class JumpPart extends Action {
+    constructor(entity, jump, index) {
+        super();
+        this.entity = entity;
+        this.jump = jump;
+        this.index = index;
+
+        this.source = this.entity.Position.vec;
+        this.destination = this.jump.path.absoluteArray[this.index];
+    }
+
+    commit() {
+        this.entity.Position.vec.set(this.destination);
+        var nextIndex = this.index + 1;
+        if (nextIndex <= this.jump.path.length) {
+            this.entity.OnLevel.level.scheduleImmediateAction(
+                new JumpPart(this.entity, this.jump, nextIndex)
+            );
+        }
+
+    }
+}
+JumpPart.type = ActionType.JumpPart;
 
 export class Move extends Action {
     constructor(entity, destination) {

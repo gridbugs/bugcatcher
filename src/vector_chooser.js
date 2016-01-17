@@ -72,7 +72,7 @@ export class VectorChooser {
     }
 }
 
-VectorChooser.prototype.getVector = async function(start, character) {
+VectorChooser.prototype.getPath = async function(start, character) {
     var current = start;
     while (true) {
         this.draw(start, current, character);
@@ -96,7 +96,12 @@ VectorChooser.prototype.getVector = async function(start, character) {
             break;
         case KeyCodes.Enter:
             this.drawer.draw();
-            return current;
+            return new Path(start, current);
         }
     }
+}
+
+VectorChooser.prototype.getVector = async function(start, character) {
+    var path = await this.getPath(start, character);
+    return path.end;
 }
