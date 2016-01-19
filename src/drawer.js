@@ -141,7 +141,7 @@ export class Drawer {
             let cell = level.entitySpacialHash.getCart(vec);
             let memoryCell = memory.value.getCart(level, vec);
             for (let memoryEntry of memoryCell) {
-                if (memoryCell.turn != level.turn) {
+                if (memoryEntry.turn != level.turn) {
                     solid = true;
                     break;
                 }
@@ -171,7 +171,7 @@ export class Drawer {
                 }
                 let memoryCell = memory.value.getCart(level, vec);
                 for (let memoryEntry of memoryCell) {
-                    if (memoryCell.turn != level.turn) {
+                    if (memoryEntry.turn != level.turn) {
                         solid = true;
                         break;
                     }
