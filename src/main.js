@@ -28,7 +28,8 @@ import {
     Ability,
     Pushable,
     CanPush,
-    Cooldown
+    Cooldown,
+    Equipper
 } from './component.js';
 
 import {Level} from './level.js';
@@ -45,7 +46,9 @@ import {
     DropItem,
     CallFunction,
     Wait,
-    EnterCooldown
+    EnterCooldown,
+    EquipItem,
+    UnequipItem
 } from './action.js';
 
 import {
@@ -238,9 +241,12 @@ function makePlayerCharacter(x, y) {
                         new Combatant(),
                         new Accuracy(2),
                         new Attack(2),
-                        new Health(10),
+                        new Health(11),
                         new Defence(1),
-                        new Inventory(8)
+                        new Dodge(2),
+                        new Inventory(8),
+                        new Name("Player"),
+                        new Equipper()
                     );
 }
 
@@ -331,7 +337,9 @@ const KeyCodes = {
     Jump: 66,
     Get: 71,
     Drop: 68,
-    Wait: 190
+    Wait: 190,
+    Equip: 69,
+    Unequip: 82
 }
 
 
@@ -386,6 +394,23 @@ async function dropItem(level, entity) {
         level.descriptionSystem.printMessage("Ignoring");
     }
 }
+
+async function equipItem(level, entity) {
+    level.descriptionSystem.printMessage("Equip from which slot (1-8)?");
+    var index = parseInt(await getChar());
+    if (index >= 1 && index <= 8) {
+        var item = entity.Inventory.inventory.get(index);
+        if (item != null) {
+            return new EquipItem(entity, item);
+        } else {
+            level.descriptionSystem.printMessage(`No item in slot ${index}.`);
+        }
+    } else {
+        level.descriptionSystem.printMessage("Ignoring");
+    }
+}
+
+
 
 var teleportChooser, jumpChooser, playerCharacter;
 
@@ -498,6 +523,17 @@ async function getPlayerAction(level, entity) {
             var action = await dropItem(level, entity);
             if (action != null) {
                 return action;
+            }
+            break;
+        case KeyCodes.Equip:
+            var action = await equipItem(level, entity);
+            if (action != null) {
+                return action;
+            }
+            break;
+        case KeyCodes.Unequip:
+            if (entity.Equipper.item != null) {
+                return new UnequipItem(entity);
             }
             break;
         }

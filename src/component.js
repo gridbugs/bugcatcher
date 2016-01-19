@@ -285,3 +285,11 @@ export class Cooldown extends Component {
     }
 }
 Cooldown.type = ComponentType.Cooldown;
+
+export class Equipper extends Component {
+    constructor(item = null) {
+        super();
+        this.item = item;
+    }
+}
+Equipper.type = ComponentType.Equipper;

@@ -20,16 +20,9 @@ body {
     height: 380px;
     color: white;
 }
-#hud {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    height: 40px;
-}
 #log {
     position: absolute;
-    top: 40px;
+    top: 120px;
     left: 0px;
     right: 0px;
     bottom: 0px;
@@ -149,7 +142,63 @@ body {
     position: absolute;
     right: 0px;
 }
+.inventory-slot-equipped {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background-color: rgba(0, 255, 0, 0.2);
+}
 
+#hud {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 100px;
+}
+#hud-lhs {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    width: 200px;
+}
+#hud-rhs {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 200px;
+}
+#hud-statistics {
+    width: 180px;
+}
+#hud-statistics > div.statistic {
+    position: relative;
+    height: 16px;
+}
+div.statistic > span.name {
+    position: absolute;
+    left: 0px;
+}
+div.statistic > span.value {
+    position: absolute;
+    right: 0px;
+}
+#hud-title {
+    padding-bottom: 14px;
+}
+#hud-health {
+    position: relative;
+    width: 100px;
+    height: 16px;
+    padding-bottom: 14px;
+}
+#hud-modifiers {
+    position: relative;
+}
 </style>
 
 </head>
@@ -161,10 +210,12 @@ body {
     </div>
     <div id="inventory-container">
 
-
             <div class="inventory-slot">
+                <div class="inventory-slot-equipped"></div>
                 <div class="inventory-slot-number">1</div>
-                <div class="inventory-slot-status">cooldown(4)</div>
+                <div class="inventory-slot-status-container">
+                    <div class="inventory-slot-status">cooldown(4)</div>
+                </div>
                 <div class="inventory-slot-item">
                     <div class="inventory-item-image"><span style="color:blue">A</span></div>
                     <div class="inventory-item-name">Worker Ant</div>
@@ -175,13 +226,43 @@ body {
                     <div><span class="name">Accuracy:</span><span class="value">4</span></div>
                     <div><span class="name">Dodge:</span><span class="value">3</span></div>
                     </div>
-                    <div class="inventory-slot-cooldown"></div>
+                    <!--<div class="inventory-slot-cooldown"></div>-->
                 </div>
             </div>
 
     </div>
     <div id="left-panel">
-        <div id="hud"></div>
+        <div id="hud">
+            <div id="hud-lhs">
+                <div id="hud-health" class="statistic"><span class="name">Health:</span><span class="value">10/10</span></div>
+                <div id="hud-modifiers">
+                    <span class="modifier">Ant-like Strength(10)</span>, 
+                    <span class="modifier">Ant-like Strength(10)</span>
+                </div>
+            </div>
+            <div id="hud-rhs">
+                <div id="hud-title"><span id="hud-title-player">Player</span>
+                <span id="hud-title-plus"> + </span><span id="hud-title-equipped">Worker Ant</span></div>
+                <div id="hud-statistics">
+                <div class="statistic"><span class="name">Attack:</span><span class="value">
+                    <span class="total">23</span>
+                    <span class="sum">(10 + 13)</span>
+                </span></div>
+                <div class="statistic"><span class="name">Defence:</span><span class="value">
+                    <span class="total">23</span>
+                    <span class="sum">(10 + 13)</span>
+                </span></div>
+                <div class="statistic"><span class="name">Accuracy:</span><span class="value">
+                    <span class="total">23</span>
+                    <span class="sum">(10 + 13)</span>
+                </span></div>
+                <div class="statistic"><span class="name">Dodge:</span><span class="value">
+                    <span class="total">23</span>
+                    <span class="sum">(10 + 13)</span>
+                </span></div>
+                </div>
+            </div>
+        </div>
         <div id="log"></div>
     </div>
 </div>

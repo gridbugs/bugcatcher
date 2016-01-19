@@ -25,7 +25,8 @@ export const ComponentType = mkenum(
     'Ability',
     'Pushable',
     'CanPush',
-    'Cooldown'
+    'Cooldown',
+    'Equipper'
 );
 
 export const ComponentNames = mknametable(ComponentType);

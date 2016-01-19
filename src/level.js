@@ -13,6 +13,7 @@ import {ObservationSystem} from './observation_system.js';
 import {DoorSystem} from './door_system.js';
 import {CombatSystem} from './combat_system.js';
 import {PushSystem} from './push_system.js';
+import {EquipmentSystem} from './equipment_system.js';
 
 import {PlayerCharacter, Position} from './component.js';
 
@@ -37,6 +38,7 @@ export class Level {
         this.doorSystem = new DoorSystem(this);
         this.combatSystem = new CombatSystem(this);
         this.pushSystem = new PushSystem(this);
+        this.equipmentSystem = new EquipmentSystem(this);
     }
 
     addEntity(entity, x, y) {
@@ -94,6 +96,7 @@ Level.prototype.applyAction = function(action) {
     this.doorSystem.check(action);
     this.combatSystem.check(action);
     this.pushSystem.check(action);
+    this.equipmentSystem.check(action);
 
     if (action.success) {
         action.commit(this);

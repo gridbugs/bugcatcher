@@ -350,3 +350,29 @@ export class EnterCooldown extends Action {
     }
 }
 EnterCooldown.type = ActionType.EnterCooldown;
+
+export class EquipItem extends Action {
+    constructor(entity, item) {
+        super();
+        this.entity = entity;
+        this.item = item;
+    }
+
+    commit() {
+        this.entity.Equipper.item = this.item;
+    }
+}
+EquipItem.type = ActionType.EquipItem;
+
+export class UnequipItem extends Action {
+    constructor(entity) {
+        super();
+        this.entity = entity;
+        this.item = entity.Equipper.item;
+    }
+
+    commit() {
+        this.entity.Equipper.item = null;
+    }
+}
+UnequipItem.type = ActionType.UnequipItem;

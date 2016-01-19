@@ -12,10 +12,16 @@ import {
     Dodge
 } from './component.js';
 
+const STATISTICS = [Attack, Defence, Accuracy, Dodge];
+
 export class HudSystem {
     constructor(level) {
         this.level = level;
         this.$element = $('#hud');
+        this.$hudTitle = $('#hud-title');
+        this.$hudStatistics = $('#hud-statistics');
+        this.$hudHealth = $('#hud-health');
+        this.$hudModifiers = $('#hud-modifiers');
         this.$inventoryContainer = $('#inventory-container');
     }
 
@@ -24,11 +30,17 @@ export class HudSystem {
         return `<span class="statistic"><span class="name">${name}</span>: <span class="value">${value}</span></span>`;
     }
 
-    formatInventorySlot(index, item) {
+    formatInventorySlot(entity, index, item) {
         var inventoryItem = "";
         var inventoryCooldown = "";
         var inventoryStatus = "";
+        var equipped = "";
         if (item != null) {
+
+            if (entity.Equipper.item == item) {
+                equipped = '<div class="inventory-slot-equipped"></div>';
+            }
+
             var statistics = [];
             if (item.hasComponent(Health)) {
                 statistics.push(`
@@ -92,6 +104,7 @@ export class HudSystem {
         }
         return `
             <div class="inventory-slot">
+                ${equipped}
                 <div class="inventory-slot-number">${index}.</div>
                 <div class="inventory-slot-status-container">
                 ${inventoryStatus}
@@ -109,26 +122,65 @@ export class HudSystem {
         return `<span class="modifier">${component.displayName}${remainingTime}</span>`;
     }
 
+    formatBaseStatistics(entity) {
+        let arr = [];
+        for (let s of STATISTICS) {
+            let c = entity.getComponent(s);
+            arr.push(`
+                <div class="statistic" style="margin-right:60px"><span class="name">${c.name}:</span><span class="value">
+                    <span class="total">${c.value}</span>
+                </span></div>
+            `);
+        }
+        return arr.join('');
+    }
+
+    formatEquippedStatistics(entity, item) {
+        let arr = [];
+        for (let s of STATISTICS) {
+            let baseComponent = entity.getComponent(s);
+            let itemComponent = item.getComponent(s);
+            let total = getStatistic(entity, s);
+            arr.push(`
+                <div class="statistic"><span class="name">${baseComponent.name}:</span><span class="value">
+                    <span class="total">${total}</span>
+                    <span class="sum">(${baseComponent.value} + ${itemComponent.value})</span>
+                </span></div>
+            `);
+        }
+        return arr.join('');
+ 
+    }
+
     run(entity) {
-        this.$element.empty();
-        this.$element.append('<div>');
-        this.$element.append([
-            this.formatStatistic(entity, Health, 'Health'),
-        ].join('<span class="space">&nbsp;&nbsp;</span>'));
-        this.$element.append('</div>');
-        this.$element.append('<div>');
+        this.$hudHealth.empty();
+        this.$hudHealth.append(`<span class="name">Health:</span>
+                                <span class="value">${entity.Health.value}/${entity.Health.maxValue}</span>`);
+
+        this.$hudModifiers.empty();
         var modifiers = [];
         for (let c of entity.iterateComponents()) {
             if (c.displayable) {
                 modifiers.push(this.formatModifier(entity, c));
             }
         }
-        this.$element.append(modifiers.join('<span class="space">&nbsp;&nbsp;</span>'));
-        this.$element.append('</div>');
-        
+        this.$hudModifiers.append(modifiers.join(', '));
+
+        this.$hudTitle.empty();
+        this.$hudTitle.append(`<span id="hud-title-player">${entity.Name.fullName}</span>`);
+
+        this.$hudStatistics.empty();
+        if (entity.Equipper.item == null) {
+            this.$hudStatistics.append(this.formatBaseStatistics(entity));
+        } else {
+            this.$hudTitle.append(`<span id="hud-title-plus"> + </span><span id="hud-title-equipped">
+                                    ${entity.Equipper.item.Name.shortName}</span></div>`);
+            this.$hudStatistics.append(this.formatEquippedStatistics(entity, entity.Equipper.item));
+        }
+
         this.$inventoryContainer.empty();
         for (let [index, item] of entity.Inventory.inventory) {
-            this.$inventoryContainer.append(this.formatInventorySlot(index, item));
+            this.$inventoryContainer.append(this.formatInventorySlot(entity, index, item));
         }
 
     }
