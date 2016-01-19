@@ -1,13 +1,6 @@
-import {AvlTree} from './avl_tree.js';
-import {Vec2} from './vec2.js';
-import {Grid} from './grid.js';
 import {getKey, getKeyCode, getChar} from './input.js';
-import {mdelay} from './time.js';
-import {mkenum, mknametable, tableIterator} from './util.js';
 import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors} from './direction.js';
-import {Schedule} from './schedule.js';
-import {Entity, EntityMap} from './entity.js';
-import {SpacialHash, AggregateSpacialHash} from './spacial_hash.js';
+import {Entity} from './entity.js';
 import {detectVisibleArea} from './recursive_shadowcast.js';
 import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
 import {
@@ -23,7 +16,6 @@ import {
     Door,
     DownStairs,
     UpStairs,
-    OnLevel,
     Combatant,
     Health,
     Armour,
@@ -49,8 +41,6 @@ import {
     DropItem
 } from './action.js';
 
-import {spread} from './spread.js';
-import {Path} from './path.js';
 import {VectorChooser} from './vector_chooser.js';
 import {InputCancelled} from './exception.js';
 
@@ -99,9 +89,9 @@ var dungeonString = [
 '%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%%%%%,%%%%%%,%%',
 '%%%%%%,%%%%%%%%%%%%%%%%%%%%,,,,,,,,,,,<,,,,,,,,,,,%%%%%%%%,%%%%%%,%%',
 '%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
-'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
-'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
-'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%&%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%&%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
+'%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%&%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
 '%%%%%%,%%%%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%,%%%%%%,%%',
 '%%%%%%,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,%%%%%%,%%',
 '%%%%%%,%%%%%%%%%%%%%,%%%%%%%%%%%%%%%%%,%%%%%%%%%%,%%%%%%%%%%%%%%%,%%',
@@ -164,11 +154,11 @@ function makeGrasshopperLarvae(x, y) {
 
 function makeTargetDummy(x, y) {
     return new Entity(  new Position(x, y), 
-                        new Tile('t', 'red', null, 2), 
-                        new Opacity(0), new OnLevel(), 
-                        new Combatant(), 
-                        new Health(4), 
-                        new Armour(1), 
+                        new Tile('t', 'red', null, 3), 
+                        new Opacity(0),
+                        new Combatant(),
+                        new Health(4),
+                        new Armour(1),
                         new Dodge(1),
                         new Name("target dummy")
                     );
@@ -176,14 +166,13 @@ function makeTargetDummy(x, y) {
 
 function makePlayerCharacter(x, y) {
     return new Entity(  new Position(x, y),
-                        new Tile('@', 'white', null, 2),
+                        new Tile('@', 'white', null, 4),
                         new Actor(detectVisibleArea, getPlayerAction),
                         new PlayerCharacter(),
                         new Collider(),
                         new Memory(),
                         new Vision(20),
                         new Opacity(0.2),
-                        new OnLevel(),
                         new Combatant(),
                         new Accuracy(2),
                         new MeleeDamage(2),
@@ -262,8 +251,8 @@ const KeyCodes = {
     Right: 39,
     Down: 40,
     Close: 67,
-    DownStairs: 86,
-    UpStairs: 87,
+    DownStairs: 190,
+    UpStairs: 188,
     Teleport: 65,
     Jump: 66,
     Get: 71,
@@ -272,8 +261,8 @@ const KeyCodes = {
 
 
 function closeDoor(level, entity) {
-    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.vec)) {
-        for (let e of cell.entities()) {
+    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.coordinates)) {
+        for (let e of cell) {
             if (e.hasComponent(Door) && e.Door.open) {
                 return new CloseDoor(entity, e);
             }
@@ -283,16 +272,16 @@ function closeDoor(level, entity) {
 }
 
 function ascendStairs(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
-    for (let e of cell.entities()) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
+    for (let e of cell) {
         if (e.hasComponent(UpStairs)) {
             return new Ascend(entity, e);
         }
     }
 }
 function descendStairs(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
-    for (let e of cell.entities()) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
+    for (let e of cell) {
         if (e.hasComponent(DownStairs)) {
             return new Descend(entity, e);
         }
@@ -300,8 +289,8 @@ function descendStairs(level, entity) {
 }
 
 function getItem(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.vec);
-    for (let e of cell.entities()) {
+    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
+    for (let e of cell) {
         if (e.hasComponent(Getable)) {
             return new GetItem(entity, e);
         }
@@ -326,7 +315,7 @@ async function dropItem(level, entity) {
 var teleportChooser, jumpChooser, playerCharacter;
 
 function canSee(entity, vector) {
-    var level = entity.OnLevel.level;
+    var level = entity.Position.level;
     for (let e of level.entitySpacialHash.getCart(vector)) {
         if (entity.Memory.lastSeenTimes.get(level, e) == level.turn) {
             return true;
@@ -367,7 +356,7 @@ async function getPlayerAction(level, entity) {
             break;
         case KeyCodes.Teleport:
             try {
-                var vector = await teleportChooser.getVector(playerCharacter.Position.vec, playerCharacter);
+                var vector = await teleportChooser.getVector(playerCharacter.Position.coordinates, playerCharacter);
                 if (canSee(playerCharacter, vector)) {
                     return new Teleport(entity, vector);
                 }
@@ -380,7 +369,7 @@ async function getPlayerAction(level, entity) {
             break;
         case KeyCodes.Jump:
             try {
-                var path = await jumpChooser.getPath(playerCharacter.Position.vec, playerCharacter);
+                var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
                 return new Jump(entity, path);
             } catch (e) {
                 if (e instanceof InputCancelled) {
@@ -417,7 +406,7 @@ function getPlayerCharacter(entities) {
 
 async function gameLoop(playerCharacter) {
     while (true) {
-        await playerCharacter.OnLevel.level.progressSchedule();
+        await playerCharacter.Position.level.progressSchedule();
     }
 }
 
@@ -451,14 +440,15 @@ $(() => {(async function() {
         }
 
         upStairs.UpStairs.level = surfaceLevel;
-        upStairs.UpStairs.coordinates = downStairs.Position.vec.clone();
+        upStairs.UpStairs.coordinates = downStairs.Position.coordinates.clone();
 
         downStairs.DownStairs.level = dungeonLevel;
-        downStairs.DownStairs.coordinates = upStairs.Position.vec.clone();
+        downStairs.DownStairs.coordinates = upStairs.Position.coordinates.clone();
 
         for (let e of surfaceLevel.entities) {
-            if (e.hasComponent(OnLevel)) {
-                e.OnLevel.level = surfaceLevel;
+            if (e.hasComponent(Position)) {
+                e.Position.level = surfaceLevel;
+                e.Position.addToSpacialHash();
             }
         }
 

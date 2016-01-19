@@ -95,7 +95,7 @@ function* detectVisibleAreaOctant(
         let depth = currentFrame.depth;
         let visibility = currentFrame.visibility;
 
-        let depthAbsoluteIndex = eyeCell.coordinate.arrayGet(depthIndex) + (depth * depthDirection);
+        let depthAbsoluteIndex = eyeCell.coordinates.arrayGet(depthIndex) + (depth * depthDirection);
         if (depthAbsoluteIndex < 0 || depthAbsoluteIndex > depthMax) {
             continue;
         }
@@ -135,7 +135,7 @@ function* detectVisibleAreaOctant(
             coordIdx.arraySet(lateralIndex, i);
             let cell = grid.getCart(coordIdx);
 
-            if (coordIdx.getDistanceSquared(eyeCell.coordinate) < viewDistanceSquared) {
+            if (coordIdx.getDistanceSquared(eyeCell.coordinates) < viewDistanceSquared) {
                 yield cell;
             }
             

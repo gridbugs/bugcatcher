@@ -24,10 +24,11 @@ export class RendererSystem {
 
         ++this.seq;
 
-        for (let entity of memory.lastSeenTimes.iterateEntities(this.level)) {
-            let lastSeenTime = memory.lastSeenTimes.get(this.level, entity);
+        for (let memoryCell of memory.value.iterateEntities(this.level)) {
+            let lastSeenTime = memoryCell.turn;
+            let entity = memoryCell.entity;
             if (entity.hasComponents(Position, Tile)) {
-                let vec = entity.Position.vec;
+                let vec = entity.Position.coordinates;
                 let entry = this.grid.getCart(vec);
 
                 if (entry.seq != this.seq || entry.entity == null ||
@@ -44,7 +45,7 @@ export class RendererSystem {
         for (let entry of this.grid) {
             let entity = entry.entity;
             if (entity != null && entry.seq == this.seq) {
-                let vec = entity.Position.vec;
+                let vec = entity.Position.coordinates;
                 let colour;
                 let backgroundColour = null;
                 if (entry.current) {

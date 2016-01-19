@@ -13,7 +13,6 @@ export const ComponentTypes = mkenum(
     'Door',
     'DownStairs',
     'UpStairs',
-    'OnLevel',
     'Combatant',
     'Health',
     'Armour',

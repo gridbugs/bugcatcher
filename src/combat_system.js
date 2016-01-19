@@ -1,6 +1,3 @@
-import {GridSystem} from './grid_system.js';
-import {EntitySet} from './entity.js';
-
 import {
     MeleeAttack,
     MeleeAttackDodge,
@@ -20,16 +17,14 @@ import {
 } from './component.js';
 
 
-export class CombatSystem extends GridSystem {
-    constructor(level, entities, numCols, numRows) {
-        super(level, entities, numCols, numRows, EntitySet, (e) => {
-            return e.hasComponent(Combatant);
-        });
+export class CombatSystem {
+    constructor(level) {
+        this.level = level;
     }
  
     handleMove(action) {
         if (action.entity.hasComponent(Combatant)) {
-            let toCell = this.grid.getCart(action.destination);
+            let toCell = this.level.entitySpacialHash.getCart(action.destination);
             for (let e of toCell.keys()) {
                 if (e.hasComponent(Combatant)) {
                     action.fail();
@@ -67,7 +62,7 @@ export class CombatSystem extends GridSystem {
             break;
         case ActionType.JumpPart:
             if (action.entity.hasComponent(Combatant)) {
-                let toCell = this.grid.getCart(action.destination);
+                let toCell = this.level.entitySpacialHash.getCart(action.destination);
                 for (let e of toCell.keys()) {
                     if (e.hasComponents(Combatant)) {
                         action.fail();
@@ -76,7 +71,6 @@ export class CombatSystem extends GridSystem {
                 }
             }
             break;
-
        }
     }
 }

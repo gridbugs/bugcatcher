@@ -45,12 +45,12 @@ export class Walk extends IndirectAction {
         super();
         this.entity = entity;
         this.direction = direction;
-        this.fromCoord = entity.Position.vec.clone();
+        this.fromCoord = entity.Position.coordinates.clone();
         this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
     }
 
-    commit() {
-        this.entity.OnLevel.level.scheduleImmediateAction(
+    commit(level) {
+        level.scheduleImmediateAction(
             new Move(this.entity, this.toCoord)
         );
     }
@@ -64,8 +64,8 @@ export class Teleport extends Action {
         this.destination = destination;
     }
 
-    commit() {
-        this.entity.OnLevel.level.scheduleImmediateAction(
+    commit(level) {
+        level.scheduleImmediateAction(
             new Move(this.entity, this.destination)
         );
     }
@@ -79,8 +79,8 @@ export class Jump extends Action {
         this.path = path;
     }
 
-    commit() {
-        this.entity.OnLevel.level.scheduleImmediateAction(
+    commit(level) {
+        level.scheduleImmediateAction(
             new JumpPart(this.entity, this, 1)
         );
     }
@@ -94,15 +94,15 @@ export class JumpPart extends Action {
         this.jump = jump;
         this.index = index;
 
-        this.source = this.entity.Position.vec.clone();
+        this.source = this.entity.Position.coordinates.clone();
         this.destination = this.jump.path.absoluteArray[this.index];
     }
 
-    commit() {
-        this.entity.Position.vec.set(this.destination);
+    commit(level) {
+        this.entity.Position.coordinates = this.destination;
         var nextIndex = this.index + 1;
         if (nextIndex <= this.jump.path.length) {
-            this.entity.OnLevel.level.scheduleImmediateAction(
+            level.scheduleImmediateAction(
                 new JumpPart(this.entity, this.jump, nextIndex)
             );
         }
@@ -116,11 +116,11 @@ export class Move extends Action {
         super();
         this.entity = entity;
         this.destination = destination;
-        this.source = entity.Position.vec.clone();
+        this.source = entity.Position.coordinates.clone();
     }
 
     commit() {
-        this.entity.Position.vec.set(this.destination);
+        this.entity.Position.coordinates = this.destination;
     }
 }
 Move.type = ActionType.Move;
@@ -157,30 +157,30 @@ export class CloseDoor extends Action {
 }
 CloseDoor.type = ActionType.CloseDoor;
 
-export class Ascend extends Action {
+export class Ascend extends IndirectAction {
     constructor(entity, stairs) {
         super();
         this.entity = entity;
         this.stairs = stairs;
     }
 
-    commit() {
-        this.entity.OnLevel.level.scheduleImmediateAction(
+    commit(level) {
+        level.scheduleImmediateAction(
             new ExitLevel(this.entity, this.stairs.UpStairs.level, this.stairs.UpStairs.coordinates)
         );
     }
 }
 Ascend.type = ActionType.Ascend;
 
-export class Descend extends Action {
+export class Descend extends IndirectAction {
     constructor(entity, stairs) {
         super();
         this.entity = entity;
         this.stairs = stairs;
     }
 
-    commit() {
-        this.entity.OnLevel.level.scheduleImmediateAction(
+    commit(level) {
+        level.scheduleImmediateAction(
             new ExitLevel(this.entity, this.stairs.DownStairs.level, this.stairs.DownStairs.coordinates)
         );
     }
@@ -191,7 +191,7 @@ export class Descend extends Action {
 }
 Descend.type = ActionType.Descend;
 
-export class ExitLevel extends Action {
+export class ExitLevel extends IndirectAction {
     constructor(entity, level, coordinates) {
         super();
         this.entity = entity;
@@ -199,18 +199,16 @@ export class ExitLevel extends Action {
         this.coordinates = coordinates;
     }
 
-    commit() {
-        this.entity.OnLevel.level.entities.delete(this.entity);
-        this.entity.OnLevel.level = this.level;
-        this.entity.Position.vec.set(this.coordinates);
-        this.entity.OnLevel.level.entities.add(this.entity);
+    commit(level) {
+        level.deleteEntity(this.entity);
+        this.level.addEntity(this.entity, this.coordinates.x, this.coordinates.y);
         
         this.level.scheduleImmediateAction(new EnterLevel(this.entity, this.level, this.coordinates));
     }
 }
 ExitLevel.type = ActionType.ExitLevel;
 
-export class EnterLevel extends Action {
+export class EnterLevel extends IndirectAction {
     constructor(entity, level, coordinates) {
         super();
         this.entity = entity;
@@ -219,7 +217,7 @@ export class EnterLevel extends Action {
     }
 
     commit() {
-        this.entity.OnLevel.level.scheduleActorTurn(this.entity);
+        this.level.scheduleActorTurn(this.entity);
     }
 }
 EnterLevel.type = ActionType.EnterLevel;
@@ -255,10 +253,10 @@ export class MeleeAttackHit extends Action {
         this.damage = damage;
     }
 
-    commit() {
+    commit(level) {
         this.entity.Health.value -= this.damage;
         if (this.entity.Health.value <= 0) {
-            this.entity.OnLevel.level.scheduleImmediateAction(new Die(this.entity, this.attack));
+            level.scheduleImmediateAction(new Die(this.entity, this.attack));
         }
     }
 }
@@ -298,8 +296,8 @@ export class GetItem extends Action {
         this.item = item;
     }
 
-    commit() {
-        this.item.removeComponent(Position);
+    commit(level) {
+        level.deleteEntity(this.item);
         this.entity.Inventory.inventory.insert(this.item);
     }
 }
@@ -313,10 +311,10 @@ export class DropItem extends Action {
         this.item = this.entity.Inventory.inventory.get(index);
     }
 
-    commit() {
+    commit(level) {
         this.entity.Inventory.inventory.delete(this.index);
-        var vec = this.entity.Position.vec;
-        this.item.addComponent(new Position(vec.x, vec.y));
+        var vec = this.entity.Position.coordinates;
+        level.addEntity(this.item, vec.x, vec.y);
     }
 }
 DropItem.type = ActionType.DropItem;

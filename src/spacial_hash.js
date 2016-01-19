@@ -1,12 +1,13 @@
 import {Grid} from './grid.js';
 import {ActionType} from './action_type.js';
+import {EntitySet} from './entity_set.js';
 
 export class SpacialHash extends Grid {
-    constructor(width, height, Container) {
+    constructor(width, height, Container=EntitySet) {
         super(width, height);
         if (Container != undefined) {
             for (let [i, j] of this.coordinates()) {
-                this.set(j, i, new Container(j, i));
+                this.set(j, i, new Container());
             }
         }
     }
@@ -14,7 +15,7 @@ export class SpacialHash extends Grid {
     initialize(entities, predicate = (e) => {return true;}, f = (e) => {return e;}) {
         for (let entity of entities) {
             if (predicate(entity)) {
-                let vec = entity.Position.vec;
+                let vec = entity.Position.coordinates;
                 this.getCart(vec).set(entity, f(entity));
             }
         }
@@ -41,37 +42,13 @@ export class SpacialHash extends Grid {
             this.updateOnMoveAction(action);
             break;
         case ActionType.GetItem:
-            cell = this.getCart(action.entity.Position.vec);
+            cell = this.getCart(action.entity.Position.coordinates);
             cell.delete(action.item);
             break;
         case ActionType.DropItem:
-            cell = this.getCart(action.entity.Position.vec);
+            cell = this.getCart(action.entity.Position.coordinates);
             cell.add(action.item);
             break;
         }
-    }
-}
-
-export class AggregateSpacialHash extends SpacialHash {
-    constructor(width, height, Container) {
-        super(width, height, Container);
-    }
-
-    initialize(entities, predicate, f) {
-        super.initialize(entities, predicate, f);
-        for (let cell of this) {
-            cell.updateAggregate();
-        }
-        return this;
-    }
-
-    updateOnMove(fromCoord, toCoord, entity) {
-        var fromCell = this.getCart(fromCoord);
-        var toCell = this.getCart(toCoord);
-        var value = fromCell.get(entity);
-        fromCell.delete(entity);
-        toCell.set(entity, value);
-        fromCell.updateAggregate();
-        toCell.updateAggregate();
     }
 }

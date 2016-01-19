@@ -9,6 +9,11 @@ export class Vec2 {
         this.y = v.y;
     }
 
+    setPair(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
     arraySet(index, value) {
         switch (index) {
         case 0:

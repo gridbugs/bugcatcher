@@ -127,7 +127,7 @@ export class Drawer {
     drawWithPathUntilSolid(path, character, pathColour, startColour, endColour,
                                 drawFollowing = false, followingColour = null) {
     
-        var level = character.OnLevel.level;
+        var level = character.Position.level;
         var memory = character.Memory;
 
         this._prepare();

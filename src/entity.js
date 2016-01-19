@@ -1,13 +1,8 @@
 import {ComponentNames} from './component_type.js';
 import {IdMap} from './id_map.js';
 
-export class Entity {
-    constructor(...components) {
-        this.id = Entity.nextId;
-        ++Entity.nextId;
-
-        Entity.table[this.id] = this;
-
+export class LightEntity {
+    constructor(components=[]) {
         this.components = [];
         for (let c of components) {
             this.addComponent(c);
@@ -17,12 +12,18 @@ export class Entity {
     addComponent(component) {
         this.components[component.type] = component;
         this[ComponentNames[component.type]] = component;
+        component.entity = this;
+        component.afterAdd();
     }
 
-    removeComponent(component) {
-        delete this.components[component.type];
-        delete this[ComponentNames[component.type]];
+    removeComponent(componentClass) {
+        let component = this.components[componentClass.type];
+        component.beforeRemove();
+        delete this.components[componentClass.type];
+        delete this[ComponentNames[componentClass.type]];
+        component.entity = null;
     }
+
     removeComponents(...components) {
         for (let c of components) {
             this.removeComponent(c);
@@ -56,25 +57,14 @@ export class Entity {
         return this.components[component.type];
     }
 }
+
+export class Entity extends LightEntity {
+    constructor(...components) {
+        super(components);
+        this.id = Entity.nextId;
+        ++Entity.nextId;
+        Entity.table[this.id] = this;
+    }
+}
 Entity.nextId = 0;
 Entity.table = [];
-
-export class EntityMap extends IdMap {
-    constructor() {
-        super(Entity);
-    }
-    *entities() {
-        yield* this.keys();
-    }
-}
-
-export class EntitySet extends EntityMap {
-    initialize(entities) {
-        this.initializeAsSet(entities);
-        return this;
-    }
-
-    *[Symbol.iterator]() {
-        yield* this.keys();
-    }
-}

@@ -14,13 +14,21 @@ export class IdMap {
         }
         return this;
     }
+    clear() {
+        for (let key of this.keys()) {
+            this.delete(key);
+        }
+    }
     delete(obj) {
         delete this.array[obj.id];
         this.arrayKeys.delete(obj.id);
     }
     *keys() {
         for (let i of this.arrayKeys) {
-            yield this.table[i];
+            let key = this.table[i];
+            if (key != undefined) {
+                yield key;
+            }
         }
     }
     *entries() {

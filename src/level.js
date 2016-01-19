@@ -3,9 +3,7 @@ import {mdelay} from './time.js';
 import {Schedule} from './schedule.js';
 
 import {SpacialHash} from './spacial_hash.js';
-
-import {EntityMap, EntitySet} from './entity.js';
-import {IdMap} from './id_map.js';
+import {EntitySet} from './entity_set.js';
 
 import {RendererSystem} from './renderer_system.js';
 import {HudSystem} from './hud_system.js';
@@ -15,7 +13,7 @@ import {ObservationSystem} from './observation_system.js';
 import {DoorSystem} from './door_system.js';
 import {CombatSystem} from './combat_system.js';
 
-import {PlayerCharacter} from './component.js';
+import {PlayerCharacter, Position} from './component.js';
 
 export class Level {
     constructor(width, height, entities) {
@@ -33,10 +31,26 @@ export class Level {
         this.rendererSystem = new RendererSystem(this, width, height);
         this.descriptionSystem = new DescriptionSystem(this);
         this.hudSystem = new HudSystem(this);
-        this.collisionSystem = new CollisionSystem(this, this.entities, width, height);
-        this.observationSystem = new ObservationSystem(this, this.entities, width, height);
-        this.doorSystem = new DoorSystem(this, this.entities, width, height);
-        this.combatSystem = new CombatSystem(this, this.entities, width, height);
+        this.collisionSystem = new CollisionSystem(this);
+        this.observationSystem = new ObservationSystem(this, width, height);
+        this.doorSystem = new DoorSystem(this);
+        this.combatSystem = new CombatSystem(this);
+    }
+
+    addEntity(entity, x, y) {
+        this.entities.add(entity);
+        if (entity.hasComponent(Position)) {
+            entity.Position.level = this;
+        } else {
+            entity.addComponent(new Position(x, y, this));
+        }
+    }
+
+    deleteEntity(entity) {
+        this.entities.delete(entity);
+        if (entity.hasComponent(Position)) {
+            entity.removeComponent(Position);
+        }
     }
 
     setPlayerCharacter(playerCharacter) {
@@ -75,14 +89,14 @@ Level.prototype.applyAction = function(action) {
     this.combatSystem.check(action);
 
     if (action.success) {
-        action.commit();
+        action.commit(this);
 
-        this.collisionSystem.update(action);
-        this.observationSystem.update(action);
-        this.doorSystem.update(action);
-        this.combatSystem.update(action);
+        //this.collisionSystem.update(action);
+        //this.observationSystem.update(action);
+        //this.doorSystem.update(action);
+        //this.combatSystem.update(action);
 
-        this.entitySpacialHash.update(action);
+        //this.entitySpacialHash.update(action);
 
         this.descriptionSystem.run(action);
 
@@ -123,14 +137,5 @@ Level.prototype.progressSchedule = async function() {
 Level.prototype.flushImmediate = async function() {
     while (this.schedule.hasImmediateTasks()) {
         await this.progressSchedule();
-    }
-}
-
-export class LevelMap extends IdMap {
-    constructor() {
-        super(Level);
-    }
-    *levels() {
-        yield* this.keys();
     }
 }
