@@ -204,8 +204,8 @@ export class Health extends Statistic {
 }
 Health.type = ComponentType.Health;
 
-export class Armour extends Statistic {}
-Armour.type = ComponentType.Armour;
+export class Defence extends Statistic {}
+Defence.type = ComponentType.Defence;
 
 export class Dodge extends Statistic {}
 Dodge.type = ComponentType.Dodge;
@@ -213,8 +213,8 @@ Dodge.type = ComponentType.Dodge;
 export class Accuracy extends Statistic {}
 Accuracy.type = ComponentType.Accuracy;
 
-export class MeleeDamage extends Statistic {}
-MeleeDamage.type = ComponentType.MeleeDamage;
+export class Attack extends Statistic {}
+Attack.type = ComponentType.Attack;
 
 export class Name extends Component {
     constructor(fullName, shortName = fullName) {

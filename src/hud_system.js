@@ -6,7 +6,10 @@ import {
 
 import {
     Health,
-    Armour
+    Defence,
+    Attack,
+    Accuracy,
+    Dodge
 } from './component.js';
 
 export class HudSystem {
@@ -26,25 +29,74 @@ export class HudSystem {
         var inventoryCooldown = "";
         var inventoryStatus = "";
         if (item != null) {
+            var statistics = [];
+            if (item.hasComponent(Health)) {
+                statistics.push(`
+                    <div>
+                        <span class="name">Health:</span>
+                        <span class="value">${item.Health.value}/${item.Health.maxValue}</span>
+                    </div>
+                `);
+            }
+            if (item.hasComponent(Attack)) {
+                statistics.push(`
+                    <div>
+                        <span class="name">Attack:</span>
+                        <span class="value">${item.Attack.value}</span>
+                    </div>
+                `);
+            }
+            if (item.hasComponent(Defence)) {
+                statistics.push(`
+                    <div>
+                        <span class="name">Defence:</span>
+                        <span class="value">${item.Defence.value}</span>
+                    </div>
+                `);
+            }
+            if (item.hasComponent(Accuracy)) {
+                statistics.push(`
+                    <div>
+                        <span class="name">Accuracy:</span>
+                        <span class="value">${item.Accuracy.value}</span>
+                    </div>
+                `);
+            }
+            if (item.hasComponent(Dodge)) {
+                statistics.push(`
+                    <div>
+                        <span class="name">Dodge:</span>
+                        <span class="value">${item.Dodge.value}</span>
+                    </div>
+                `);
+            }
+ 
+            statistics = statistics.join('');
+
+            if (item.hasComponent(Ability) && item.hasComponent(Cooldown)) {
+                inventoryCooldown = '<div class="inventory-slot-cooldown"></div>';
+                inventoryStatus = `<div class="inventory-slot-status" style="font-size:12px">cooldown(${item.Cooldown.ticksRemaining})</div>`;
+            } else {
+                inventoryStatus = `<div class="inventory-slot-status">ready</div>`;
+            }
             inventoryItem = `
-                <div class="inventory-item">
+                <div class="inventory-slot-item">
                     <div class="inventory-item-image">
                         <span style="color:${item.Tile.colour}">${item.Tile.character}</span>
                     </div>
                     <div class="inventory-item-name">${item.Name.shortName}</div>
+                    <div class="inventory-slot-statistics">${statistics}</div>
+                    ${inventoryCooldown}
                 </div>
             `;
-            if (item.hasComponent(Ability) && item.hasComponent(Cooldown)) {
-                inventoryCooldown = '<div class="inventory-slot-cooldown"></div>';
-                inventoryStatus = `<div class="inventory-slot-status">(${item.Cooldown.ticksRemaining})</div>`;
-            }
         }
         return `
             <div class="inventory-slot">
-                ${inventoryItem}
-                ${inventoryCooldown}
-                <div class="inventory-slot-number">${index}</div>
+                <div class="inventory-slot-number">${index}.</div>
+                <div class="inventory-slot-status-container">
                 ${inventoryStatus}
+                </div>
+                ${inventoryItem}
             </div>
         `;
     }

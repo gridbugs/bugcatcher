@@ -18,10 +18,10 @@ import {
     UpStairs,
     Combatant,
     Health,
-    Armour,
+    Defence,
     Dodge,
     Accuracy,
-    MeleeDamage,
+    Attack,
     Name,
     Inventory,
     Getable,
@@ -69,7 +69,7 @@ var surfaceString = [
 '&             #........#........#..))((..............#             &    &', 
 '& &           #.................#..........t.........+                  &', 
 '&             #........#........#.@>.ag..............#   &   &        & &', 
-'&     #############.####........#..........t.........#             &    &', 
+'&     #############.####........#....a.....t.........#             &    &', 
 '&     #................#.............................#           &      &', 
 '&   & #.........................#.***......t.........#                  &', 
 '&     #................#........#...*................#    &     & &     &', 
@@ -158,11 +158,31 @@ function makeDownStairs(x, y) {
 }
 
 function makeWorkerAntLarvae(x, y) {
-    return new Entity(new Position(x, y), new Tile('(', 'blue', null, 2), new Opacity(0), new Getable(), new Name('worker ant larvae', 'Wo Ant Larvae'));
+    return new Entity(  new Position(x, y),
+                        new Tile('(', 'blue', null, 2), 
+                        new Opacity(0),
+                        new Getable(),
+                        new Name('worker ant larvae', 'W. Ant Larvae'),
+                        new Health(2),
+                        new Defence(1),
+                        new Attack(0),
+                        new Dodge(1),
+                        new Accuracy(0)
+                    );
 }
 
 function makeGrasshopperLarvae(x, y) {
-    return new Entity(new Position(x, y), new Tile('(', 'green', null, 2), new Opacity(0), new Getable(), new Name('grasshopper larvae', 'Gr Hppr Larvae'));
+    return new Entity(  new Position(x, y),
+                        new Tile('(', 'green', null, 2),
+                        new Opacity(0),
+                        new Getable(),
+                        new Name('grasshopper larvae', 'Gr Hppr Larvae'),
+                        new Health(2),
+                        new Defence(1),
+                        new Attack(0),
+                        new Dodge(1),
+                        new Accuracy(0)
+                    );
 }
 
 function makeGrasshopper(x, y) {
@@ -171,7 +191,12 @@ function makeGrasshopper(x, y) {
                         new Opacity(0), 
                         new Getable(), 
                         new Name('grasshopper', 'Grass Hopper'),
-                        new Ability(jumpAbility)
+                        new Ability(jumpAbility),
+                        new Health(8),
+                        new Defence(1),
+                        new Attack(5),
+                        new Dodge(6),
+                        new Accuracy(2)
                     );
 }
 function makeAnt(x, y) {
@@ -180,7 +205,12 @@ function makeAnt(x, y) {
                         new Opacity(0), 
                         new Getable(), 
                         new Name('worker ant', 'Worker Ant'),
-                        new Ability(antAbility)
+                        new Ability(antAbility),
+                        new Health(4),
+                        new Defence(2),
+                        new Attack(4),
+                        new Dodge(2),
+                        new Accuracy(3)
                     );
 }
 
@@ -190,7 +220,7 @@ function makeTargetDummy(x, y) {
                         new Opacity(0),
                         new Combatant(),
                         new Health(4),
-                        new Armour(1),
+                        new Defence(1),
                         new Dodge(1),
                         new Name("target dummy")
                     );
@@ -207,9 +237,9 @@ function makePlayerCharacter(x, y) {
                         new Opacity(0.2),
                         new Combatant(),
                         new Accuracy(2),
-                        new MeleeDamage(2),
+                        new Attack(2),
                         new Health(10),
-                        new Armour(1),
+                        new Defence(1),
                         new Inventory(8)
                     );
 }
@@ -406,7 +436,7 @@ async function antAbility(level, entity) {
     level.scheduleImmediateAction(new EnterCooldown(this.entity, 15));
     return new CallFunction(() => {
         entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
-    }, 'You gain ant-like strength.');
+    }, `[${this.entity.Name.fullName}] You gain ant-like strength.`);
 }
 
 async function getPlayerAction(level, entity) {

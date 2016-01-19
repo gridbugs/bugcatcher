@@ -12,8 +12,8 @@ import {
     Combatant,
     Accuracy,
     Dodge,
-    MeleeDamage,
-    Armour
+    Attack,
+    Defence
 } from './component.js';
 
 
@@ -44,7 +44,7 @@ export class CombatSystem {
             this.level.scheduleImmediateAction(new MeleeAttackDodge(action));
             return;
         }
-        let attackDamage = getStatistic(attacker, MeleeDamage) - getStatistic(target, Armour);
+        let attackDamage = getStatistic(attacker, Attack) - getStatistic(target, Defence);
         if (attackDamage <= 0) {
             this.level.scheduleImmediateAction(new MeleeAttackBlock(action));
             return;

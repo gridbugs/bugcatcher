@@ -17,7 +17,7 @@ body {
     top: 10px;
     right: 10px;
     left: 800px;
-    bottom: 10px;
+    height: 380px;
     color: white;
 }
 #hud {
@@ -57,7 +57,7 @@ body {
     top: 0px;
     left: 0px;
     bottom: 0px;
-    width: 800px;
+    right: 0px;
 }
 #inventory-container {
     position: absolute;
@@ -70,32 +70,41 @@ body {
 .inventory-slot {
     position: relative;
     float: left;
-    width: 75px;
-    height: 75px;
+    width: 120px;
+    height: 140px;
     border: 2px solid grey;
     margin-right: -2px;
 }
+.inventory-slot-item {
+    position: absolute;
+    top: 20px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+}
 .inventory-slot-number {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    height: 20px;
+    top: 6px;
+    left: 6px;
+    height: 18px;
+    font-size: 14px;
 }
 .inventory-item-image {
     position: absolute;
-    top: 15px;
+    top: 0px;
     left: 0px;
     right: 0px;
-    height: 25px;
+    height: 24px;
     font-size: 20px;
     text-align: center;
 }
 .inventory-item-name {
     position: absolute;
-    top: 40px;
+    top: 26px;
     left: 0px;
     right: 0px;
     height: 20px;
+    font-size: 14px;
     text-align: center;
 }
 .inventory-slot-cooldown {
@@ -104,15 +113,43 @@ body {
     bottom: 0px;
     left: 0px;
     right: 0px;
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.inventory-slot-status-container {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    height: 16px;
+    font-size: 14px;
 }
 .inventory-slot-status {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    height: 20px;
-    color: red;
+    bottom: 0px;
+    right: 0px;
+    font-size: 14px;
 }
+.inventory-slot-statistics {
+    position: absolute;
+    top: 50px;
+    bottom: 0px;
+    left: 10px;
+    right: 10px;
+    font-size: 11px;
+}
+.inventory-slot-statistics > div {
+    width: 100%;
+    height: 13px;
+}
+
+.inventory-slot-statistics > div > .name {
+    position: absolute;
+    left: 0px;
+}
+.inventory-slot-statistics > div > .value {
+    position: absolute;
+    right: 0px;
+}
+
 </style>
 
 </head>
@@ -126,20 +163,27 @@ body {
 
 
             <div class="inventory-slot">
-                <div class="inventory-item">
-                    <div class="inventory-item-image"><span style="color:blue">(</span></div>
-                    <div class="inventory-item-name">larvae</div>
-                </div>
-                <div class="inventory-slot-cooldown"></div>
                 <div class="inventory-slot-number">1</div>
-                <div class="inventory-slot-status">(4)</div>
+                <div class="inventory-slot-status">cooldown(4)</div>
+                <div class="inventory-slot-item">
+                    <div class="inventory-item-image"><span style="color:blue">A</span></div>
+                    <div class="inventory-item-name">Worker Ant</div>
+                    <div class="inventory-slot-statistics">
+                    <div><span class="name">Health:</span><span class="value">2/10</span></div>
+                    <div><span class="name">Attack:</span><span class="value">4</span></div>
+                    <div><span class="name">Defence:</span><span class="value">2</span></div>
+                    <div><span class="name">Accuracy:</span><span class="value">4</span></div>
+                    <div><span class="name">Dodge:</span><span class="value">3</span></div>
+                    </div>
+                    <div class="inventory-slot-cooldown"></div>
+                </div>
             </div>
 
     </div>
-</div>
-<div id="left-panel">
-    <div id="hud"></div>
-    <div id="log"></div>
+    <div id="left-panel">
+        <div id="hud"></div>
+        <div id="log"></div>
+    </div>
 </div>
 </body>
 </html>
