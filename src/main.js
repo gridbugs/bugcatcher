@@ -395,7 +395,7 @@ async function jumpAbility(level, entity) {
             level.print(`[${this.entity.Name.fullName}] Jump to where?`);
         }
         var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
-        level.scheduleImmediateAction(new EnterCooldown(this.entity, 5));
+        level.scheduleImmediateAction(new EnterCooldown(this.entity, 2+Math.floor(path.length/2)));
         return new Jump(entity, path);
     } catch (e) {
         return null;

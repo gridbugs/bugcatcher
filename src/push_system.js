@@ -46,29 +46,16 @@ export class PushSystem {
             break;
         case ActionType.Walk:
             let toCell = this.level.entitySpacialHash.getCart(action.destination);
-            let solid = false;
-            if (action.entity.hasComponent(Collider)) {
-                for (let e of toCell) {
-                    if (e.hasComponent(Solid)) {
-                        solid = true;
-                        action.fail();
+            for (let e of toCell) {
+                if (e.hasComponent(Pushable)) {
+                    action.fail();
+                    if (action.entity.hasComponent(CanPush)) {
+                        this.level.scheduleImmediateAction(new Push(e, action.direction));
+                        this.level.scheduleImmediateAction(new PushWalk(action.entity, action.direction));
+                    } else {
                         this.level.scheduleImmediateAction(new Bump(action.entity, e));
-                        break;
                     }
-                }
-            }
-            if (!solid) {
-                for (let e of toCell) {
-                    if (e.hasComponent(Pushable)) {
-                        action.fail();
-                        if (action.entity.hasComponent(CanPush)) {
-                            this.level.scheduleImmediateAction(new Push(e, action.direction));
-                            this.level.scheduleImmediateAction(new PushWalk(action.entity, action.direction));
-                        } else {
-                            this.level.scheduleImmediateAction(new Bump(action.entity, e));
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
             break;
