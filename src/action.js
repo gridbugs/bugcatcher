@@ -47,6 +47,8 @@ export class Walk extends IndirectAction {
         this.direction = direction;
         this.fromCoord = entity.Position.coordinates.clone();
         this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
+        this.destination = this.toCoord;
+        this.source = this.fromCoord;
     }
 
     commit(level) {
@@ -56,6 +58,24 @@ export class Walk extends IndirectAction {
     }
 }
 Walk.type = ActionType.Walk;
+
+export class Push extends Action {
+    constructor(entity, direction) {
+        super();
+        this.entity = entity;
+        this.direction = direction;
+        this.source = entity.Position.coordinates.clone();
+        this.destination = this.source.add(CardinalVectors[direction]);
+    }
+
+    commit() {
+        this.entity.Position.coordinates = this.destination;
+    }
+}
+Push.type = ActionType.Push;
+
+export class PushWalk extends Walk {}
+PushWalk.type = ActionType.PushWalk;
 
 export class Teleport extends Action {
     constructor(entity, destination) {

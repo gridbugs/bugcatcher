@@ -10,31 +10,18 @@ export class DoorSystem {
 
     check(action) {
         switch (action.type) {
-        case ActionType.Move:
+        case ActionType.Walk:
             if (action.entity.hasComponent(Collider)) {
                 let toCell = this.level.entitySpacialHash.getCart(action.destination);
-                for (let e of toCell.keys()) {
+                for (let e of toCell) {
                     if (e.hasComponents(Door, Solid)) {
                         action.fail();
-
                         this.level.scheduleImmediateAction(new OpenDoor(action.entity, e));
                         break;
                     }
                 }
             }
             break;
-        case ActionType.JumpPart:
-            if (action.entity.hasComponent(Collider)) {
-                let toCell = this.level.entitySpacialHash.getCart(action.destination);
-                for (let e of toCell.keys()) {
-                    if (e.hasComponents(Door, Solid)) {
-                        action.fail();
-                        break;
-                    }
-                }
-            }
-            break;
-
         }
     }
 }

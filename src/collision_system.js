@@ -1,5 +1,5 @@
 import {ActionType} from './action_type.js';
-import {Position, Collider, Solid} from './component.js';
+import {Collider, Solid} from './component.js';
 
 export class CollisionSystem {
     constructor(level) {

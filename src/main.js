@@ -25,7 +25,9 @@ import {
     Name,
     Inventory,
     Getable,
-    Ability
+    Ability,
+    Pushable,
+    CanPush
 } from './component.js';
 
 import {Level} from './level.js';
@@ -126,7 +128,7 @@ function makeDirtWall(x, y) {
     return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1));
 }
 function makeBoulder(x, y) {
-    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Solid(), new Opacity(1));
+    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0.5), new Pushable(), new Collider());
 }
 function makeDirt(x, y) {
     return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
@@ -191,7 +193,8 @@ function makePlayerCharacter(x, y) {
                         new MeleeDamage(2),
                         new Health(10),
                         new Armour(1),
-                        new Inventory(8)
+                        new Inventory(8),
+                        new CanPush()
                     );
 }
 

@@ -1,6 +1,6 @@
 import {mkenum, mknametable} from './util.js';
 
-export const ComponentTypes = mkenum(
+export const ComponentType = mkenum(
     'Position',
     'Tile',
     'Actor',
@@ -22,7 +22,9 @@ export const ComponentTypes = mkenum(
     'Name',
     'Inventory',
     'Getable',
-    'Ability'
+    'Ability',
+    'Pushable',
+    'CanPush'
 );
 
-export const ComponentNames = mknametable(ComponentTypes);
+export const ComponentNames = mknametable(ComponentType);

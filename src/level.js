@@ -12,6 +12,7 @@ import {CollisionSystem} from './collision_system.js';
 import {ObservationSystem} from './observation_system.js';
 import {DoorSystem} from './door_system.js';
 import {CombatSystem} from './combat_system.js';
+import {PushSystem} from './push_system.js';
 
 import {PlayerCharacter, Position} from './component.js';
 
@@ -35,6 +36,7 @@ export class Level {
         this.observationSystem = new ObservationSystem(this, width, height);
         this.doorSystem = new DoorSystem(this);
         this.combatSystem = new CombatSystem(this);
+        this.pushSystem = new PushSystem(this);
     }
 
     addEntity(entity, x, y) {
@@ -66,7 +68,7 @@ export class Level {
     scheduleImmediateAction(action, relativeTime = 0) {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
-            if (action.direct) {
+            if (action.direct && relativeTime > 0) {
                 this.observationSystem.run(this.playerCharacter);
                 this.rendererSystem.run(this.playerCharacter);
                 await mdelay(relativeTime);
@@ -91,16 +93,10 @@ Level.prototype.applyAction = function(action) {
     this.collisionSystem.check(action);
     this.doorSystem.check(action);
     this.combatSystem.check(action);
+    this.pushSystem.check(action);
 
     if (action.success) {
         action.commit(this);
-
-        //this.collisionSystem.update(action);
-        //this.observationSystem.update(action);
-        //this.doorSystem.update(action);
-        //this.combatSystem.update(action);
-
-        //this.entitySpacialHash.update(action);
 
         this.descriptionSystem.run(action);
 

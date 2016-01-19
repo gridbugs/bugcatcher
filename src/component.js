@@ -1,5 +1,5 @@
 import {Vec2} from './vec2.js';
-import {ComponentTypes, ComponentNames} from './component_type.js';
+import {ComponentType, ComponentNames} from './component_type.js';
 import {LevelSpacialHash} from './level_spacial_hash.js';
 import {NumericInventory} from './numeric_inventory.js';
 
@@ -72,7 +72,7 @@ export class Position extends Component {
         return new Position(this._coordinates.x, this._coordinates.y, this.level);
     }
 }
-Position.type = ComponentTypes.Position;
+Position.type = ComponentType.Position;
 
 export class Tile extends Component {
     constructor(character, colour, backgroundColour, zIndex) {
@@ -86,7 +86,7 @@ export class Tile extends Component {
         return new Tile(this.character, this.colour, this.backgroundColour, this.zIndex);
     }
 }
-Tile.type = ComponentTypes.Tile;
+Tile.type = ComponentType.Tile;
 
 export class Actor extends Component {
     constructor(observe, getAction) {
@@ -95,16 +95,16 @@ export class Actor extends Component {
         this.getAction = getAction;
     }
 }
-Actor.type = ComponentTypes.Actor;
+Actor.type = ComponentType.Actor;
 
 export class Solid extends Component {}
-Solid.type = ComponentTypes.Solid;
+Solid.type = ComponentType.Solid;
 
 export class Collider extends Component {}
-Collider.type = ComponentTypes.Collider;
+Collider.type = ComponentType.Collider;
 
 export class PlayerCharacter extends Component {}
-PlayerCharacter.type = ComponentTypes.PlayerCharacter;
+PlayerCharacter.type = ComponentType.PlayerCharacter;
 
 export class Memory extends Component {
     constructor() {
@@ -112,7 +112,7 @@ export class Memory extends Component {
         this.value = new LevelSpacialHash(Set);
     }
 }
-Memory.type = ComponentTypes.Memory;
+Memory.type = ComponentType.Memory;
 
 export class Vision extends Component {
     constructor(distance) {
@@ -120,7 +120,7 @@ export class Vision extends Component {
         this.distance = distance;
     }
 }
-Vision.type = ComponentTypes.Vision;
+Vision.type = ComponentType.Vision;
 
 export class Opacity extends Component {
     constructor(value) {
@@ -128,7 +128,7 @@ export class Opacity extends Component {
         this.value = value;
     }
 }
-Opacity.type = ComponentTypes.Opacity;
+Opacity.type = ComponentType.Opacity;
 
 export class Door extends Component {
     constructor(open = false) {
@@ -136,7 +136,7 @@ export class Door extends Component {
         this.open = open;
     }
 }
-Door.type = ComponentTypes.Door;
+Door.type = ComponentType.Door;
 
 export class DownStairs extends Component {
     constructor(level, coordinates) {
@@ -145,7 +145,7 @@ export class DownStairs extends Component {
         this.coordinates = coordinates;
     }
 }
-DownStairs.type = ComponentTypes.DownStairs;
+DownStairs.type = ComponentType.DownStairs;
 
 export class UpStairs extends Component {
     constructor(level, coordinates) {
@@ -154,10 +154,10 @@ export class UpStairs extends Component {
         this.coordinates = coordinates;
     }
 }
-UpStairs.type = ComponentTypes.UpStairs;
+UpStairs.type = ComponentType.UpStairs;
 
 export class Combatant extends Component {}
-Combatant.type = ComponentTypes.Combatant;
+Combatant.type = ComponentType.Combatant;
 
 export class Health extends Statistic {
     constructor(value, maxValue = value) {
@@ -165,19 +165,19 @@ export class Health extends Statistic {
         this.maxValue = maxValue;
     }
 }
-Health.type = ComponentTypes.Health;
+Health.type = ComponentType.Health;
 
 export class Armour extends Statistic {}
-Armour.type = ComponentTypes.Armour;
+Armour.type = ComponentType.Armour;
 
 export class Dodge extends Statistic {}
-Dodge.type = ComponentTypes.Dodge;
+Dodge.type = ComponentType.Dodge;
 
 export class Accuracy extends Statistic {}
-Accuracy.type = ComponentTypes.Accuracy;
+Accuracy.type = ComponentType.Accuracy;
 
 export class MeleeDamage extends Statistic {}
-MeleeDamage.type = ComponentTypes.MeleeDamage;
+MeleeDamage.type = ComponentType.MeleeDamage;
 
 export class Name extends Component {
     constructor(fullName, shortName = fullName) {
@@ -190,7 +190,7 @@ export class Name extends Component {
         return new Name(this.fullName.slice(), this.shortName.slice());
     }
 }
-Name.type = ComponentTypes.Name;
+Name.type = ComponentType.Name;
 
 export class Inventory extends Component {
     constructor(numSlots) {
@@ -198,10 +198,10 @@ export class Inventory extends Component {
         this.inventory = new NumericInventory(numSlots);
     }
 }
-Inventory.type = ComponentTypes.Inventory;
+Inventory.type = ComponentType.Inventory;
 
 export class Getable extends Component {}
-Getable.type = ComponentTypes.Getable;
+Getable.type = ComponentType.Getable;
 
 export class Ability extends Component {
     constructor(getAction) {
@@ -209,7 +209,10 @@ export class Ability extends Component {
         this.getAction = getAction;
     }
 }
-Ability.type = ComponentTypes.Ability;
+Ability.type = ComponentType.Ability;
 
 export class Pushable extends Component {}
-Pushable.type = ComponentTypes.Pushable;
+Pushable.type = ComponentType.Pushable;
+
+export class CanPush extends Component {}
+CanPush.type = ComponentType.CanPush;

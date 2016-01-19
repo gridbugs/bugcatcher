@@ -18,5 +18,7 @@ export const ActionType = mkenum(
     'Jump',
     'JumpPart',
     'GetItem',
-    'DropItem'
+    'DropItem',
+    'Push',
+    'PushWalk'
 );
