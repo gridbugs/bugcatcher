@@ -139,13 +139,19 @@ export class Drawer {
         let solid = false;
         for (let vec of path.iterateAbsolute()) {
             let cell = level.entitySpacialHash.getCart(vec);
-            for (let entity of cell) {
-                if (entity.hasComponent(Solid)) {
+            let memoryCell = memory.value.getCart(level, vec);
+            for (let memoryEntry of memoryCell) {
+                if (memoryCell.turn != level.turn) {
                     solid = true;
                     break;
                 }
-                let lastSeenTime = memory.lastSeenTimes.get(level, entity);
-                if (lastSeenTime != level.turn) {
+            }
+            if (solid) {
+                break;
+            }
+
+            for (let entity of cell) {
+                if (entity.hasComponent(Solid)) {
                     solid = true;
                     break;
                 }
@@ -163,14 +169,19 @@ export class Drawer {
                 if (!this.grid.hasCoordinateCart(vec)) {
                     break;
                 }
-                let cell = level.entitySpacialHash.getCart(vec);
-                for (let entity of cell) {
-                    if (entity.hasComponent(Solid)) {
+                let memoryCell = memory.value.getCart(level, vec);
+                for (let memoryEntry of memoryCell) {
+                    if (memoryCell.turn != level.turn) {
                         solid = true;
                         break;
                     }
-                    let lastSeenTime = memory.lastSeenTimes.get(level, entity);
-                    if (lastSeenTime != level.turn) {
+                }
+                if (solid) {
+                    break;
+                }
+                let cell = level.entitySpacialHash.getCart(vec);
+                for (let entity of cell) {
+                    if (entity.hasComponent(Solid)) {
                         solid = true;
                         break;
                     }

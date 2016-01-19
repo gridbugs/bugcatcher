@@ -316,8 +316,9 @@ var teleportChooser, jumpChooser, playerCharacter;
 
 function canSee(entity, vector) {
     var level = entity.Position.level;
-    for (let e of level.entitySpacialHash.getCart(vector)) {
-        if (entity.Memory.lastSeenTimes.get(level, e) == level.turn) {
+    var memoryCell = entity.Memory.value.getCart(level, vector);
+    for (let memoryEntry of memoryCell) {
+        if (memoryEntry.turn == level.turn) {
             return true;
         }
     }
