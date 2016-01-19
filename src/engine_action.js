@@ -14,7 +14,7 @@ export class RemoveComponent extends Action {
 }
 RemoveComponent.type = ActionType.RemoveComponent;
 
-export class EnterCooldown extends Action {
+export class EnterComponentCooldown extends Action {
     constructor(entity, component, time) {
         super();
         this.entity = entity;
@@ -26,9 +26,9 @@ export class EnterCooldown extends Action {
         this.component.cooldown(this.time);
     }
 }
-EnterCooldown.type = ActionType.EnterCooldown;
+EnterComponentCooldown.type = ActionType.EnterComponentCooldown;
 
-export class ExitCooldown extends Action {
+export class ExitComponentCooldown extends Action {
     constructor(entity, component) {
         super();
         this.entity = entity;
@@ -38,4 +38,4 @@ export class ExitCooldown extends Action {
         this.component.coolingDown = false;
     }
 }
-ExitCooldown.type = ActionType.ExitCooldown;
+ExitComponentCooldown.type = ActionType.ExitComponentCooldown;

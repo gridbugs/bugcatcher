@@ -1,6 +1,7 @@
 import {getStatistic} from './statistics.js';
 import {
-    Ability
+    Ability,
+    Cooldown
 } from './component.js';
 
 import {
@@ -33,9 +34,9 @@ export class HudSystem {
                     <div class="inventory-item-name">${item.Name.shortName}</div>
                 </div>
             `;
-            if (item.hasComponent(Ability) && item.Ability.coolingDown) {
+            if (item.hasComponent(Ability) && item.hasComponent(Cooldown)) {
                 inventoryCooldown = '<div class="inventory-slot-cooldown"></div>';
-                inventoryStatus = `<div class="inventory-slot-status">(${item.Ability.cooldownTime})</div>`;
+                inventoryStatus = `<div class="inventory-slot-status">(${item.Cooldown.ticksRemaining})</div>`;
             }
         }
         return `

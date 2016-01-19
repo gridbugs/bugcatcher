@@ -4,7 +4,7 @@ import {LevelSpacialHash} from './level_spacial_hash.js';
 import {NumericInventory} from './numeric_inventory.js';
 import {
     RemoveComponent,
-    ExitCooldown
+    ExitComponentCooldown
 } from './engine_action.js';
 
 class Component {
@@ -263,7 +263,7 @@ export class Ability extends Component {
         if (this.coolingDown) {
             --this.cooldownTime;
             if (this.cooldownTime == 0) {
-                level.scheduleImmediateAction(new ExitCooldown(this.entity, this));
+                level.scheduleImmediateAction(new ExitComponentCooldown(this.entity, this));
             }
         }
     }
@@ -276,4 +276,12 @@ Pushable.type = ComponentType.Pushable;
 export class CanPush extends Component {}
 CanPush.type = ComponentType.CanPush;
 
-
+export class Cooldown extends Component {
+    constructor(remainingTime) {
+        super();
+        if (remainingTime != undefined) {
+            this.makeTemporary(remainingTime);
+        }
+    }
+}
+Cooldown.type = ComponentType.Cooldown;

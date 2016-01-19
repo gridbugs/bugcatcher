@@ -27,7 +27,8 @@ import {
     Getable,
     Ability,
     Pushable,
-    CanPush
+    CanPush,
+    Cooldown
 } from './component.js';
 
 import {Level} from './level.js';
@@ -43,11 +44,12 @@ import {
     GetItem,
     DropItem,
     CallFunction,
-    Wait
+    Wait,
+    EnterCooldown
 } from './action.js';
 
 import {
-    EnterCooldown 
+    EnterComponentCooldown 
 } from './engine_action.js';
 
 import {VectorChooser} from './vector_chooser.js';
@@ -377,8 +379,8 @@ async function useAbility(level, entity) {
             level.descriptionSystem.printMessage(`Slot ${index} is empty.`);
         } else if (!item.hasComponent(Ability)) {
             level.descriptionSystem.printMessage(`The ${item.Name.fullName} has no ability.`);
-        } else if (item.Ability.coolingDown) {
-            level.print('This ability is cooling down.');
+        } else if (item.hasComponent(Cooldown)) {
+            level.print('This item is cooling down.');
         } else {
             return item.Ability.getAction(level, entity);
         }
@@ -393,7 +395,7 @@ async function jumpAbility(level, entity) {
             level.print(`[${this.entity.Name.fullName}] Jump to where?`);
         }
         var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
-        level.scheduleImmediateAction(new EnterCooldown(this.entity, this.entity.Ability, 5));
+        level.scheduleImmediateAction(new EnterCooldown(this.entity, 5));
         return new Jump(entity, path);
     } catch (e) {
         return null;
@@ -401,9 +403,9 @@ async function jumpAbility(level, entity) {
 }
 
 async function antAbility(level, entity) {
+    level.scheduleImmediateAction(new EnterCooldown(this.entity, 15));
     return new CallFunction(() => {
         entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
-        level.scheduleImmediateAction(new EnterCooldown(this.entity, this.entity.Ability, 15));
     }, 'You gain ant-like strength.');
 }
 

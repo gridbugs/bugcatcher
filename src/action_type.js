@@ -25,6 +25,7 @@ export const ActionType = mkenum(
     'RemoveComponent',
     'Wait',
     'Bump',
-    'EnterCooldown',
-    'ExitCooldown'
+    'EnterComponentCooldown',
+    'ExitComponentCooldown',
+    'EnterCooldown'
 );

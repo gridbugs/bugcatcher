@@ -8,7 +8,8 @@ import {
     Combatant,
     Tile,
     Getable,
-    Position
+    Position,
+    Cooldown
 } from './component.js';
 
 export class Walk extends IndirectAction {
@@ -340,3 +341,12 @@ export class Bump extends Action {
     }
 }
 Bump.type = ActionType.Bump;
+
+export class EnterCooldown extends Action {
+    constructor(entity, time) {
+        super();
+        this.entity = entity;
+        this.entity.addComponent(new Cooldown(time));
+    }
+}
+EnterCooldown.type = ActionType.EnterCooldown;
