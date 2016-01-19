@@ -41,7 +41,9 @@ import {
     Walk,
     Jump,
     GetItem,
-    DropItem
+    DropItem,
+    CallFunction,
+    Wait
 } from './action.js';
 
 import {VectorChooser} from './vector_chooser.js';
@@ -60,7 +62,7 @@ var surfaceString = [
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#..))((..............#             &    &', 
 '& &           #.................#..........t.........+                  &', 
-'&             #........#........#.@>..g..............#   &   &        & &', 
+'&             #........#........#.@>.ag..............#   &   &        & &', 
 '&     #############.####........#..........t.........#             &    &', 
 '&     #................#.............................#           &      &', 
 '&   & #.........................#.***......t.........#                  &', 
@@ -156,6 +158,7 @@ function makeWorkerAntLarvae(x, y) {
 function makeGrasshopperLarvae(x, y) {
     return new Entity(new Position(x, y), new Tile('(', 'green', null, 2), new Opacity(0), new Getable(), new Name('grasshopper larvae', 'Gr Hppr Larvae'));
 }
+
 function makeGrasshopper(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('g', 'green', null, 2), 
@@ -165,7 +168,15 @@ function makeGrasshopper(x, y) {
                         new Ability(jumpAbility)
                     );
 }
-
+function makeAnt(x, y) {
+    return new Entity(  new Position(x, y),
+                        new Tile('a', 'blue', null, 2), 
+                        new Opacity(0), 
+                        new Getable(), 
+                        new Name('worker ant', 'Worker Ant'),
+                        new Ability(antAbility)
+                    );
+}
 
 function makeTargetDummy(x, y) {
     return new Entity(  new Position(x, y), 
@@ -193,8 +204,7 @@ function makePlayerCharacter(x, y) {
                         new MeleeDamage(2),
                         new Health(10),
                         new Armour(1),
-                        new Inventory(8),
-                        new CanPush()
+                        new Inventory(8)
                     );
 }
 
@@ -251,6 +261,10 @@ function initWorld(str) {
                 entities.push(makeFloor(j, i));
                 entities.push(makeGrasshopper(j, i));
                 break;
+            case 'a':
+                entities.push(makeFloor(j, i));
+                entities.push(makeAnt(j, i));
+                break;
             case '%':
                 entities.push(makeDirtWall(j, i));
                 entities.push(makeDirt(j, i));
@@ -280,7 +294,8 @@ const KeyCodes = {
     Ability: 65,
     Jump: 66,
     Get: 71,
-    Drop: 68
+    Drop: 68,
+    Wait: 53
 }
 
 
@@ -378,6 +393,12 @@ async function jumpAbility(level, entity) {
     }
 }
 
+async function antAbility(level, entity) {
+    return new CallFunction(() => {
+        entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
+    }, 'You gain ant-like strength.');
+}
+
 async function getPlayerAction(level, entity) {
     while (true) {
         var code = await getKeyCode();
@@ -431,6 +452,9 @@ async function getPlayerAction(level, entity) {
             if (action != null) {
                 return action;
             }
+            break;
+        case KeyCodes.Wait:
+            return new Wait(entity);
             break;
         }
     }

@@ -54,12 +54,14 @@ export class PushSystem {
                     }
                 }
             }
-            if (!solid && action.entity.hasComponent(CanPush)) {
+            if (!solid) {
                 for (let e of toCell) {
                     if (e.hasComponent(Pushable)) {
                         action.fail();
-                        this.level.scheduleImmediateAction(new Push(e, action.direction));
-                        this.level.scheduleImmediateAction(new PushWalk(action.entity, action.direction));
+                        if (action.entity.hasComponent(CanPush)) {
+                            this.level.scheduleImmediateAction(new Push(e, action.direction));
+                            this.level.scheduleImmediateAction(new PushWalk(action.entity, action.direction));
+                        }
                         break;
                     }
                 }

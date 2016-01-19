@@ -1,5 +1,6 @@
 import {ActionType} from './action_type.js';
 import {CardinalVectors} from './direction.js';
+import {Action, IndirectAction} from './base_action.js';
 
 import {
     Door,
@@ -9,36 +10,6 @@ import {
     Getable,
     Position
 } from './component.js';
-
-class Action {
-    constructor() {
-        this.success = true;
-    }
-
-    get type() {
-        return this.constructor.type;
-    }
-
-    get direct() {
-        return true;
-    }
-
-    fail() {
-        this.success = false;
-    }
-
-    shouldReschedule() {
-        return true;
-    }
-
-    commit() {}
-}
-
-export class IndirectAction extends Action {
-    get direct() {
-        return false;
-    }
-}
 
 export class Walk extends IndirectAction {
     constructor(entity, direction) {
@@ -123,7 +94,8 @@ export class JumpPart extends Action {
         var nextIndex = this.index + 1;
         if (nextIndex <= this.jump.path.length) {
             level.scheduleImmediateAction(
-                new JumpPart(this.entity, this.jump, nextIndex)
+                new JumpPart(this.entity, this.jump, nextIndex),
+                10
             );
         }
 
@@ -338,3 +310,24 @@ export class DropItem extends Action {
     }
 }
 DropItem.type = ActionType.DropItem;
+
+export class CallFunction extends Action {
+    constructor(fn, description='') {
+        super();
+        this.fn = fn;
+        this.description = description;
+    }
+
+    commit() {
+        this.fn();
+    }
+}
+CallFunction.type = ActionType.CallFunction;
+
+export class Wait extends Action {
+    constructor(entity) {
+        super();
+        this.entity = entity;
+    }
+}
+Wait.type = ActionType.Wait;

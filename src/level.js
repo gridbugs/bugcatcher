@@ -125,7 +125,8 @@ Level.prototype.gameStep = async function(entity) {
             return;
         }
     }
-
+    
+    entity.tickComponents(this);
     this.scheduleActorTurn(entity);
 }
 

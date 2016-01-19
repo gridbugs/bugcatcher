@@ -2,10 +2,14 @@ import {Vec2} from './vec2.js';
 import {ComponentType, ComponentNames} from './component_type.js';
 import {LevelSpacialHash} from './level_spacial_hash.js';
 import {NumericInventory} from './numeric_inventory.js';
+import {RemoveComponent} from './engine_action.js';
 
 class Component {
     constructor() {
         this.entity = null;
+        this.temporary = false;
+        this.ticksRemaining = 0;
+        this.displayable = false;
     }
     get name() {
         return ComponentNames[this.type];
@@ -15,6 +19,36 @@ class Component {
     }
     afterAdd() {}
     beforeRemove() {}
+
+    setDisplayable(displayName=this.name) {
+        this.displayable = true;
+        this.displayName = displayName;
+        return this;
+    }
+    clearDisplayable() {
+        this.displayable = false;
+        return this;
+    }
+
+    makeTemporary(ticks, expireMessage=null) {
+        this.temporary = true;
+        this.ticksRemaining = ticks;
+        this.expireMessage=expireMessage;
+        return this;
+    }
+    makePermanent() {
+        this.temporary = false;
+        this.ticksRemaining = 0;
+        return this;
+    }
+    tick(level) {
+        if (this.temporary) {
+            --this.ticksRemaining;
+            if (this.ticksRemaining == 0) {
+                level.scheduleImmediateAction(new RemoveComponent(this.entity, this));
+            }
+        }
+    }
 }
 
 class ValueComponent extends Component {
@@ -216,3 +250,5 @@ Pushable.type = ComponentType.Pushable;
 
 export class CanPush extends Component {}
 CanPush.type = ComponentType.CanPush;
+
+

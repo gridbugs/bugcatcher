@@ -39,12 +39,30 @@ export class HudSystem {
         `;
     }
 
+    formatModifier(entity, component) {
+        let remainingTime = "";
+        if (component.temporary) {
+            remainingTime = ` (${component.ticksRemaining})`;
+        }
+        return `<span class="modifier">${component.displayName}${remainingTime}</span>`;
+    }
+
     run(entity) {
         this.$element.empty();
+        this.$element.append('<div>');
         this.$element.append([
             this.formatStatistic(entity, Health, 'Health'),
-            this.formatStatistic(entity, Armour, 'Armour')
         ].join('<span class="space">&nbsp;&nbsp;</span>'));
+        this.$element.append('</div>');
+        this.$element.append('<div>');
+        var modifiers = [];
+        for (let c of entity.iterateComponents()) {
+            if (c.displayable) {
+                modifiers.push(this.formatModifier(entity, c));
+            }
+        }
+        this.$element.append(modifiers.join('<span class="space">&nbsp;&nbsp;</span>'));
+        this.$element.append('</div>');
         
         this.$inventoryContainer.empty();
         for (let [index, item] of entity.Inventory.inventory) {

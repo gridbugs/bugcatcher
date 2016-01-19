@@ -92,7 +92,19 @@ export class DescriptionSystem {
                 this.printMessage(`You drop up the ${action.item.Name.fullName}.`);
             }
             break;
-
+        case ActionType.CallFunction:
+            this.printMessage(action.description);
+            break;
+        case ActionType.RemoveComponent:
+            if (action.component.expireMessage != null) {
+                this.printMessage(action.component.expireMessage);
+            }
+            break;
+        case ActionType.Wait:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('Waiting...');
+            }
+            break;
         }
     }
 }

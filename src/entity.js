@@ -16,6 +16,20 @@ export class LightEntity {
         component.afterAdd();
     }
 
+    *iterateComponents() {
+        for (let c of this.components) {
+            if (c != undefined) {
+                yield c;
+            }
+        }
+    }
+
+    tickComponents(level) {
+        for (let c of this.iterateComponents()) {
+            c.tick(level);
+        }
+    }
+
     removeComponent(componentClass) {
         let component = this.components[componentClass.type];
         component.beforeRemove();
