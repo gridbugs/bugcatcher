@@ -24,7 +24,8 @@ import {
     MeleeDamage,
     Name,
     Inventory,
-    Getable
+    Getable,
+    Ability
 } from './component.js';
 
 import {Level} from './level.js';
@@ -42,7 +43,7 @@ import {
 } from './action.js';
 
 import {VectorChooser} from './vector_chooser.js';
-import {InputCancelled} from './exception.js';
+import {InputCancelled, NoAction} from './exception.js';
 
 var entities = [];
 
@@ -57,11 +58,11 @@ var surfaceString = [
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#..))((..............#             &    &', 
 '& &           #.................#..........t.........+                  &', 
-'&             #........#........#.@>.................#   &   &        & &', 
+'&             #........#........#.@>..g..............#   &   &        & &', 
 '&     #############.####........#..........t.........#             &    &', 
 '&     #................#.............................#           &      &', 
-'&   & #.........................#..........t.........#                  &', 
-'&     #................#........#....................#    &     & &     &', 
+'&   & #.........................#.***......t.........#                  &', 
+'&     #................#........#...*................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
 '&     #................#........#....................#      &         & &', 
@@ -124,6 +125,9 @@ function makeWall(x, y) {
 function makeDirtWall(x, y) {
     return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1));
 }
+function makeBoulder(x, y) {
+    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Solid(), new Opacity(1));
+}
 function makeDirt(x, y) {
     return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
 }
@@ -149,6 +153,15 @@ function makeWorkerAntLarvae(x, y) {
 
 function makeGrasshopperLarvae(x, y) {
     return new Entity(new Position(x, y), new Tile('(', 'green', null, 2), new Opacity(0), new Getable(), new Name('grasshopper larvae', 'Gr Hppr Larvae'));
+}
+function makeGrasshopper(x, y) {
+    return new Entity(  new Position(x, y),
+                        new Tile('g', 'green', null, 2), 
+                        new Opacity(0), 
+                        new Getable(), 
+                        new Name('grasshopper', 'Grass Hopper'),
+                        new Ability(jumpAbility)
+                    );
 }
 
 
@@ -215,6 +228,10 @@ function initWorld(str) {
                 entities.push(makeFloor(j, i));
                 entities.push(makePlayerCharacter(j, i));
                 break;
+            case '*':
+                entities.push(makeFloor(j, i));
+                entities.push(makeBoulder(j, i));
+                break;
             case 't':
                 entities.push(makeFloor(j, i));
                 entities.push(makeTargetDummy(j, i));
@@ -226,6 +243,10 @@ function initWorld(str) {
             case ')':
                 entities.push(makeFloor(j, i));
                 entities.push(makeGrasshopperLarvae(j, i));
+                break;
+            case 'g':
+                entities.push(makeFloor(j, i));
+                entities.push(makeGrasshopper(j, i));
                 break;
             case '%':
                 entities.push(makeDirtWall(j, i));
@@ -253,7 +274,7 @@ const KeyCodes = {
     Close: 67,
     DownStairs: 190,
     UpStairs: 188,
-    Teleport: 65,
+    Ability: 65,
     Jump: 66,
     Get: 71,
     Drop: 68
@@ -325,6 +346,35 @@ function canSee(entity, vector) {
     return false;
 }
 
+async function useAbility(level, entity) {
+    level.descriptionSystem.printMessage("Which ability (1-8)?");
+    var index = parseInt(await getChar());
+    if (index >= 1 && index <= 8) {
+        var item = entity.Inventory.inventory.get(index);
+        if (item == null) {
+            level.descriptionSystem.printMessage(`Slot ${index} is empty.`);
+        } else if (!item.hasComponent(Ability)) {
+            level.descriptionSystem.printMessage(`The ${item.Name.fullName} has no ability.`);
+        } else {
+            return item.Ability.getAction(level, entity);
+        }
+    } else {
+        level.descriptionSystem.printMessage("Ignoring");
+    }
+}
+
+async function jumpAbility(level, entity) {
+    try {
+        if (this.entity.hasComponent(Name)) {
+            level.print(`[${this.entity.Name.fullName}] Jump to where?`);
+        }
+        var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
+        return new Jump(entity, path);
+    } catch (e) {
+        return null;
+    }
+}
+
 async function getPlayerAction(level, entity) {
     while (true) {
         var code = await getKeyCode();
@@ -355,30 +405,18 @@ async function getPlayerAction(level, entity) {
                 return action;
             }
             break;
-        case KeyCodes.Teleport:
-            try {
-                var vector = await teleportChooser.getVector(playerCharacter.Position.coordinates, playerCharacter);
-                if (canSee(playerCharacter, vector)) {
-                    return new Teleport(entity, vector);
-                }
-            } catch (e) {
-                if (e instanceof InputCancelled) {
-                    break;
-                }
-                throw e;
+        case KeyCodes.Ability:
+            var action = await useAbility(level, entity);
+            if (action != null) {
+                return action;
             }
             break;
         case KeyCodes.Jump:
-            try {
-                var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
-                return new Jump(entity, path);
-            } catch (e) {
-                if (e instanceof InputCancelled) {
-                    break;
-                }
-                throw e;
+            var action = await jumpAbility(level, entity);
+            if (action != null) {
+                return action;
             }
-            break;
+           break;
         case KeyCodes.Get:
             var action = getItem(level, entity);
             if (action != null) {

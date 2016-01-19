@@ -21,7 +21,8 @@ export const ComponentTypes = mkenum(
     'MeleeDamage',
     'Name',
     'Inventory',
-    'Getable'
+    'Getable',
+    'Ability'
 );
 
 export const ComponentNames = mknametable(ComponentTypes);

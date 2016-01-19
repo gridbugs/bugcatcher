@@ -80,6 +80,10 @@ export class Level {
     get turn() {
         return this.schedule.sequenceNumber;
     }
+
+    print(string) {
+        this.descriptionSystem.printMessage(string);
+    }
 }
 Level.nextId = 0;
 

@@ -15,18 +15,12 @@ class Component {
     }
     afterAdd() {}
     beforeRemove() {}
-    clone() {
-        return new this.constructor();
-    }
 }
 
 class ValueComponent extends Component {
     constructor(value) {
         super();
         this.value = value;
-    }
-    clone() {
-        return new this.constructor(this.value);
     }
 }
 
@@ -100,9 +94,6 @@ export class Actor extends Component {
         this.observe = observe;
         this.getAction = getAction;
     }
-    clone() {
-        return new Actor(this.observe, this.getAction);
-    }
 }
 Actor.type = ComponentTypes.Actor;
 
@@ -128,9 +119,6 @@ export class Vision extends Component {
         super();
         this.distance = distance;
     }
-    clone() {
-        return new Vision(this.distance);
-    }
 }
 Vision.type = ComponentTypes.Vision;
 
@@ -139,9 +127,6 @@ export class Opacity extends Component {
         super();
         this.value = value;
     }
-    clone() {
-        return new Opacity(this.value);
-    }
 }
 Opacity.type = ComponentTypes.Opacity;
 
@@ -149,9 +134,6 @@ export class Door extends Component {
     constructor(open = false) {
         super();
         this.open = open;
-    }
-    clone() {
-        return new Door(this.open);
     }
 }
 Door.type = ComponentTypes.Door;
@@ -162,9 +144,6 @@ export class DownStairs extends Component {
         this.level = level;
         this.coordinates = coordinates;
     }
-    clone() {
-        return new DownStairs(this.level, this.coordinates.clone());
-    }
 }
 DownStairs.type = ComponentTypes.DownStairs;
 
@@ -173,9 +152,6 @@ export class UpStairs extends Component {
         super();
         this.level = level;
         this.coordinates = coordinates;
-    }
-    clone() {
-        return new UpStairs(this.level, this.coordinates.clone());
     }
 }
 UpStairs.type = ComponentTypes.UpStairs;
@@ -187,9 +163,6 @@ export class Health extends Statistic {
     constructor(value, maxValue = value) {
         super(value);
         this.maxValue = maxValue;
-    }
-    clone() {
-        return new Health(this.value, this.maxValue);
     }
 }
 Health.type = ComponentTypes.Health;
@@ -224,11 +197,19 @@ export class Inventory extends Component {
         super();
         this.inventory = new NumericInventory(numSlots);
     }
-    clone() {
-        return new Inventory(this.inventory.numSlots);
-    }
 }
 Inventory.type = ComponentTypes.Inventory;
 
 export class Getable extends Component {}
 Getable.type = ComponentTypes.Getable;
+
+export class Ability extends Component {
+    constructor(getAction) {
+        super();
+        this.getAction = getAction;
+    }
+}
+Ability.type = ComponentTypes.Ability;
+
+export class Pushable extends Component {}
+Pushable.type = ComponentTypes.Pushable;
