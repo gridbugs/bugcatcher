@@ -30,6 +30,14 @@ export class NumericInventory {
         }
     }
 
+    *contents() {
+        for (let e of this.array) {
+            if (e != undefined) {
+                yield e;
+            }
+        }
+    }
+
     delete(index) {
         if (this.array[index] == null) {
             throw new InventorySlotEmpty();

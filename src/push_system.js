@@ -9,7 +9,8 @@ import {
 from './component.js';
 import {
     Push,
-    PushWalk
+    PushWalk,
+    Bump
 } from './action.js';
 
 export class PushSystem {
@@ -37,6 +38,7 @@ export class PushSystem {
                 for (let e of toCell) {
                     if (e.hasAnyComponent(Pushable, Solid, Collider, Combatant)) {
                         action.fail();
+                        this.level.scheduleImmediateAction(new Bump(action.entity, e));
                         break;
                     }
                 }
@@ -50,6 +52,7 @@ export class PushSystem {
                     if (e.hasComponent(Solid)) {
                         solid = true;
                         action.fail();
+                        this.level.scheduleImmediateAction(new Bump(action.entity, e));
                         break;
                     }
                 }
@@ -61,6 +64,8 @@ export class PushSystem {
                         if (action.entity.hasComponent(CanPush)) {
                             this.level.scheduleImmediateAction(new Push(e, action.direction));
                             this.level.scheduleImmediateAction(new PushWalk(action.entity, action.direction));
+                        } else {
+                            this.level.scheduleImmediateAction(new Bump(action.entity, e));
                         }
                         break;
                     }

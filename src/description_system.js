@@ -1,5 +1,9 @@
 import {ActionType} from './action_type.js';
-import {PlayerCharacter} from './component.js';
+import {
+    PlayerCharacter,
+    Pushable,
+    CanPush
+} from './component.js';
 
 export class DescriptionSystem {
     constructor(level, element = DescriptionSystem.getDefaultElement()) {
@@ -105,6 +109,16 @@ export class DescriptionSystem {
                 this.printMessage('Waiting...');
             }
             break;
+        case ActionType.Bump:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                if (action.entity.hasComponent(CanPush) && action.obstacle.hasComponent(Pushable)) {
+                    this.printMessage(`Cannot push the ${action.obstacle.Name.fullName}. Something is blocking the way.`);
+                } else if (action.obstacle.hasComponent(Pushable)) {
+                    this.printMessage(`Cannot push the ${action.obstacle.Name.fullName}. Perhaps if you were stronger...`);
+                } else {
+                    this.printMessage(`You bump into the ${action.obstacle.Name.fullName}. It is immovable.`);
+                }
+            }
         }
     }
 }

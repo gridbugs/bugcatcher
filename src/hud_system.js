@@ -1,4 +1,7 @@
 import {getStatistic} from './statistics.js';
+import {
+    Ability
+} from './component.js';
 
 import {
     Health,
@@ -18,10 +21,10 @@ export class HudSystem {
     }
 
     formatInventorySlot(index, item) {
-        var inventoryItem;
-        if (item == null) {
-            inventoryItem = "";
-        } else {
+        var inventoryItem = "";
+        var inventoryCooldown = "";
+        var inventoryStatus = "";
+        if (item != null) {
             inventoryItem = `
                 <div class="inventory-item">
                     <div class="inventory-item-image">
@@ -30,11 +33,17 @@ export class HudSystem {
                     <div class="inventory-item-name">${item.Name.shortName}</div>
                 </div>
             `;
+            if (item.hasComponent(Ability) && item.Ability.coolingDown) {
+                inventoryCooldown = '<div class="inventory-slot-cooldown"></div>';
+                inventoryStatus = `<div class="inventory-slot-status">(${item.Ability.cooldownTime})</div>`;
+            }
         }
         return `
             <div class="inventory-slot">
-                <div class="inventory-slot-number">${index}</div>
                 ${inventoryItem}
+                ${inventoryCooldown}
+                <div class="inventory-slot-number">${index}</div>
+                ${inventoryStatus}
             </div>
         `;
     }

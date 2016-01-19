@@ -2,7 +2,10 @@ import {Vec2} from './vec2.js';
 import {ComponentType, ComponentNames} from './component_type.js';
 import {LevelSpacialHash} from './level_spacial_hash.js';
 import {NumericInventory} from './numeric_inventory.js';
-import {RemoveComponent} from './engine_action.js';
+import {
+    RemoveComponent,
+    ExitCooldown
+} from './engine_action.js';
 
 class Component {
     constructor() {
@@ -231,6 +234,13 @@ export class Inventory extends Component {
         super();
         this.inventory = new NumericInventory(numSlots);
     }
+    tick(level) {
+        super.tick(level);
+        for (let item of this.inventory.contents()) {
+            item.tickComponents(level);
+        }
+    }
+
 }
 Inventory.type = ComponentType.Inventory;
 
@@ -241,6 +251,21 @@ export class Ability extends Component {
     constructor(getAction) {
         super();
         this.getAction = getAction;
+        this.coolingDown = false;
+        this.cooldownTime = 0;
+    }
+    cooldown(time) {
+        this.coolingDown = true;
+        this.cooldownTime = time;
+    }
+    tick(level) {
+        super.tick(level);
+        if (this.coolingDown) {
+            --this.cooldownTime;
+            if (this.cooldownTime == 0) {
+                level.scheduleImmediateAction(new ExitCooldown(this.entity, this));
+            }
+        }
     }
 }
 Ability.type = ComponentType.Ability;

@@ -331,3 +331,12 @@ export class Wait extends Action {
     }
 }
 Wait.type = ActionType.Wait;
+
+export class Bump extends Action {
+    constructor(entity, obstacle) {
+        super();
+        this.entity = entity;
+        this.obstacle = obstacle;
+    }
+}
+Bump.type = ActionType.Bump;

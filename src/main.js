@@ -46,6 +46,10 @@ import {
     Wait
 } from './action.js';
 
+import {
+    EnterCooldown 
+} from './engine_action.js';
+
 import {VectorChooser} from './vector_chooser.js';
 import {InputCancelled, NoAction} from './exception.js';
 
@@ -121,16 +125,16 @@ var surfaceLevel;
 var dungeonLevel;
 
 function makeTree(x, y) {
-    return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5));
+    return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5), new Name('tree'));
 }
 function makeWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1));
+    return new Entity(new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1), new Name('wall'));
 }
 function makeDirtWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1));
+    return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1), new Name('wall'));
 }
 function makeBoulder(x, y) {
-    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0.5), new Pushable(), new Collider());
+    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0.5), new Pushable(), new Collider(), new Name('boulder'));
 }
 function makeDirt(x, y) {
     return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
@@ -295,7 +299,7 @@ const KeyCodes = {
     Jump: 66,
     Get: 71,
     Drop: 68,
-    Wait: 53
+    Wait: 190
 }
 
 
@@ -373,6 +377,8 @@ async function useAbility(level, entity) {
             level.descriptionSystem.printMessage(`Slot ${index} is empty.`);
         } else if (!item.hasComponent(Ability)) {
             level.descriptionSystem.printMessage(`The ${item.Name.fullName} has no ability.`);
+        } else if (item.Ability.coolingDown) {
+            level.print('This ability is cooling down.');
         } else {
             return item.Ability.getAction(level, entity);
         }
@@ -387,6 +393,7 @@ async function jumpAbility(level, entity) {
             level.print(`[${this.entity.Name.fullName}] Jump to where?`);
         }
         var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
+        level.scheduleImmediateAction(new EnterCooldown(this.entity, this.entity.Ability, 5));
         return new Jump(entity, path);
     } catch (e) {
         return null;
@@ -396,13 +403,14 @@ async function jumpAbility(level, entity) {
 async function antAbility(level, entity) {
     return new CallFunction(() => {
         entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
+        level.scheduleImmediateAction(new EnterCooldown(this.entity, this.entity.Ability, 15));
     }, 'You gain ant-like strength.');
 }
 
 async function getPlayerAction(level, entity) {
     while (true) {
-        var code = await getKeyCode();
-        switch (code) {
+        var key = await getKey();
+        switch (key.keyCode) {
         case KeyCodes.Up:
             return new Walk(entity, CardinalDirections.North);
         case KeyCodes.Down:
@@ -418,15 +426,22 @@ async function getPlayerAction(level, entity) {
             }
             break;
         case KeyCodes.DownStairs:
-            var action = descendStairs(level, entity);
-            if (action != null) {
-                return action;
+        case KeyCodes.Wait:
+            if (key.shiftKey) {
+                var action = descendStairs(level, entity);
+                if (action != null) {
+                    return action;
+                }
+            } else {
+                return new Wait(entity);
             }
             break;
         case KeyCodes.UpStairs:
-            var action = ascendStairs(level, entity);
-            if (action != null) {
-                return action;
+            if (key.shiftKey) {
+                var action = ascendStairs(level, entity);
+                if (action != null) {
+                    return action;
+                }
             }
             break;
         case KeyCodes.Ability:
@@ -452,9 +467,6 @@ async function getPlayerAction(level, entity) {
             if (action != null) {
                 return action;
             }
-            break;
-        case KeyCodes.Wait:
-            return new Wait(entity);
             break;
         }
     }

@@ -83,10 +83,10 @@ body {
 }
 .inventory-item-image {
     position: absolute;
-    top: 10px;
+    top: 15px;
     left: 0px;
     right: 0px;
-    height: 30px;
+    height: 25px;
     font-size: 20px;
     text-align: center;
 }
@@ -97,6 +97,21 @@ body {
     right: 0px;
     height: 20px;
     text-align: center;
+}
+.inventory-slot-cooldown {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+.inventory-slot-status {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    height: 20px;
+    color: red;
 }
 </style>
 
@@ -111,11 +126,13 @@ body {
 
 
             <div class="inventory-slot">
-                <div class="inventory-slot-number">1</div>
                 <div class="inventory-item">
                     <div class="inventory-item-image"><span style="color:blue">(</span></div>
                     <div class="inventory-item-name">larvae</div>
                 </div>
+                <div class="inventory-slot-cooldown"></div>
+                <div class="inventory-slot-number">1</div>
+                <div class="inventory-slot-status">(4)</div>
             </div>
 
     </div>
