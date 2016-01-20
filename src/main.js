@@ -29,7 +29,8 @@ import {
     Pushable,
     CanPush,
     Cooldown,
-    EquipmentSlot
+    EquipmentSlot,
+    Timeout
 } from './component.js';
 
 import {Level} from './level.js';
@@ -161,6 +162,18 @@ function makeDownStairs(x, y) {
     return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
 }
 
+function becomePupa(entity, health, attack, defence, accuracy, dodge, fullName, shortName=fullName) {
+    entity.Health.value = health;
+    entity.Health.maxValue = health;
+    entity.Attack.value = attack;
+    entity.Defence.value = defence;
+    entity.Accuracy.value = accuracy;
+    entity.Dodge.value = dodge;
+    entity.Name.fullName = fullName;
+    entity.Name.shortName = shortName;
+    entity.Tile.character = '[';
+}
+
 function makeAntLarvae(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('(', 'blue', null, 2), 
@@ -171,7 +184,10 @@ function makeAntLarvae(x, y) {
                         new Defence(1),
                         new Attack(0),
                         new Dodge(1),
-                        new Accuracy(0)
+                        new Accuracy(0),
+                        new Timeout(20, (entity) => {
+                            becomePupa(entity, 3, 0, 10, 0, 0, 'ant pupa', 'Ant Pupa')
+                        }, 'The ant larvae becomes a pupa.')
                     );
 }
 
@@ -465,7 +481,7 @@ async function jumpAbility(level, entity) {
 async function antAbility(level, entity) {
     return new ActionPair(new CallFunction(() => {
         entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
-    }, `[${this.entity.Name.fullName}] You gain ant-like strength.`), new EnterCooldown(this.entity, 15));
+    }, entity, `[${this.entity.Name.fullName}] You gain ant-like strength.`), new EnterCooldown(this.entity, 15));
 }
 
 async function getPlayerAction(level, entity) {
@@ -560,6 +576,22 @@ async function gameLoop(playerCharacter) {
     }
 }
 
+function processEntityTimeouts(entities, level) {
+    for (let entity of entities) {
+        if (entity.hasComponent(Timeout)) {
+            entity.Timeout.progress(level);
+        }
+        if (entity.hasComponent(Inventory)) {
+            processEntityTimeouts(entity.Inventory.inventory.contents(), level);
+        }
+    }
+}
+
+function processTimeouts(level) {
+    processEntityTimeouts(level.entities, level);
+    return true;
+}
+
 $(() => {(async function() {
  
     const WIDTH = 74
@@ -602,14 +634,19 @@ $(() => {(async function() {
             }
         }
 
-    })();
     
-    playerCharacter = getPlayerCharacter(surfaceLevel.entities);
+        playerCharacter = getPlayerCharacter(surfaceLevel.entities);
 
-    surfaceLevel.scheduleActorTurn(playerCharacter, 0);
+        surfaceLevel.scheduleActorTurn(playerCharacter, 0);
 
-    surfaceLevel.setPlayerCharacter(playerCharacter);
-    dungeonLevel.setPlayerCharacter(playerCharacter);
+        surfaceLevel.setPlayerCharacter(playerCharacter);
+        dungeonLevel.setPlayerCharacter(playerCharacter);
+
+        for (let level of [surfaceLevel, dungeonLevel]) {
+            level.registerPeriodicFunction(processTimeouts, 1);
+        }
+
+    })();
 
     await gameLoop(playerCharacter);
 

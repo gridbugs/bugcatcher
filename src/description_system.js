@@ -2,7 +2,8 @@ import {ActionType} from './action_type.js';
 import {
     PlayerCharacter,
     Pushable,
-    CanPush
+    CanPush,
+    Position
 } from './component.js';
 
 export class DescriptionSystem {
@@ -29,7 +30,22 @@ export class DescriptionSystem {
         this.scrollToBottom();
     }
 
-    run(action) {
+    run(entity, action) {
+        if (action.entity == null) {
+            return;
+        }
+        if (action.entity != entity && !(action.entity.hasComponent(Position) && entity.canSee(action.entity.Position.coordinates))) {
+            let inInventory = false;
+            for (let e of entity.Inventory.inventory.contents()) {
+                if (e == action.entity) {
+                    inInventory = true;
+                }
+                break;
+            }
+            if (!inInventory) {
+                return;
+            }
+        }
         switch (action.type) {
         case ActionType.MeleeAttackHit:
             if (action.attacker.hasComponent(PlayerCharacter)) {

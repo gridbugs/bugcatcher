@@ -12,6 +12,22 @@ import {
     Cooldown
 } from './component.js';
 
+import {
+    CallFunction,
+    ActionPair,
+    RemoveComponent,
+    EnterComponentCooldown,
+    ExitComponentCooldown
+} from './engine_action.js';
+
+export {
+    CallFunction,
+    ActionPair,
+    RemoveComponent,
+    EnterComponentCooldown,
+    ExitComponentCooldown
+};
+
 export class Walk extends IndirectAction {
     constructor(entity, direction) {
         super();
@@ -312,19 +328,6 @@ export class DropItem extends Action {
 }
 DropItem.type = ActionType.DropItem;
 
-export class CallFunction extends Action {
-    constructor(fn, description='') {
-        super();
-        this.fn = fn;
-        this.description = description;
-    }
-
-    commit() {
-        this.fn();
-    }
-}
-CallFunction.type = ActionType.CallFunction;
-
 export class Wait extends Action {
     constructor(entity) {
         super();
@@ -376,20 +379,6 @@ export class UnequipItem extends Action {
     }
 }
 UnequipItem.type = ActionType.UnequipItem;
-
-export class ActionPair extends IndirectAction {
-    constructor(first, second) {
-        super();
-        this.first = first;
-        this.second = second;
-    }
-
-    commit(level) {
-        level.scheduleImmediateAction(this.first);
-        level.scheduleImmediateAction(this.second);
-    }
-}
-ActionPair.type = ActionType.ActionPair;
 
 export class FailToEquipItem extends IndirectAction {
     constructor(entity, item) {

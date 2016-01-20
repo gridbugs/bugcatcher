@@ -2,9 +2,12 @@ import {Vec2} from './vec2.js';
 import {ComponentType, ComponentNames} from './component_type.js';
 import {LevelSpacialHash} from './level_spacial_hash.js';
 import {NumericInventory} from './numeric_inventory.js';
+import {MemoryCell} from './memory_cell.js';
 import {
     RemoveComponent,
-    ExitComponentCooldown
+    ExitComponentCooldown,
+    CallFunction,
+    ActionPair
 } from './engine_action.js';
 
 class Component {
@@ -146,7 +149,8 @@ PlayerCharacter.type = ComponentType.PlayerCharacter;
 export class Memory extends Component {
     constructor() {
         super();
-        this.value = new LevelSpacialHash(Set);
+        this.value = new LevelSpacialHash(MemoryCell);
+        this.turn = -1;
     }
 }
 Memory.type = ComponentType.Memory;
@@ -293,3 +297,27 @@ export class EquipmentSlot extends Component {
     }
 }
 EquipmentSlot.type = ComponentType.EquipmentSlot;
+
+export class Timeout extends Component {
+    constructor(remainingTime, fn, description) {
+        super();
+        this.remainingTime = remainingTime;
+        this.fn = fn;
+        this.description = description;
+    }
+
+    progress(level) {
+        --this.remainingTime;
+        if (this.remainingTime == 0) {
+            level.scheduleImmediateAction(new ActionPair(
+                new CallFunction(
+                    () => {this.fn(this.entity)},
+                    this.entity,
+                    this.description
+                ),
+                new RemoveComponent(this.entity, this)
+            ));
+        }
+    }
+}
+Timeout.type = ComponentType.Timeout;

@@ -48,6 +48,10 @@ export class LightEntity {
         return this.components[component.type] != undefined;
     }
 
+    hasComponentType(type) {
+        return this.components[type] != undefined;
+    }
+
     hasComponents(...components) {
         for (let component of components) {
             if (!this.hasComponent(component)) {
@@ -69,6 +73,12 @@ export class LightEntity {
 
     getComponent(component) {
         return this.components[component.type];
+    }
+
+    canSee(vector) {
+        var level = this.Position.level;
+        var memoryCell = this.Memory.value.getCart(level, vector);
+        return memoryCell.turn == this.Memory.turn;
     }
 }
 

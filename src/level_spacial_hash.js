@@ -27,11 +27,12 @@ export class LevelSpacialHash {
     getCart(level, vector) {
         return this.get(level, vector.x, vector.y);
     }
-    *iterateEntities(level) {
+
+    *iterateCells(level) {
         let spacialHash = this.levelMap.get(level);
         if (spacialHash != null) {
             for (let entitySet of spacialHash) {
-                yield* entitySet;
+                yield entitySet;
             }
         }
     }

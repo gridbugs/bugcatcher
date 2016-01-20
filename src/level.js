@@ -71,7 +71,6 @@ export class Level {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
             if (action.direct && relativeTime > 0) {
-                this.observationSystem.run(this.playerCharacter);
                 this.rendererSystem.run(this.playerCharacter);
                 this.hudSystem.run(this.playerCharacter);
                 await mdelay(relativeTime);
@@ -102,7 +101,7 @@ Level.prototype.applyAction = function(action) {
     if (action.success) {
         action.commit(this);
 
-        this.descriptionSystem.run(action);
+        this.descriptionSystem.run(this.playerCharacter, action);
 
         return true;
     }
@@ -136,6 +135,14 @@ Level.prototype.gameStep = async function(entity) {
 Level.prototype.progressSchedule = async function() {
     var entry = this.schedule.pop();
     await entry.task();
+}
+
+Level.prototype.registerPeriodicFunction = function(fn, period) {
+    this.schedule.scheduleTask(async () => {
+        if (await fn(this)) {
+            this.registerPeriodicFunction(fn, period);
+        }
+    }, period);
 }
 
 Level.prototype.flushImmediate = async function() {

@@ -23,20 +23,21 @@ export class RendererSystem {
         var memory = entity.Memory;
 
         ++this.seq;
-
-        for (let memoryCell of memory.value.iterateEntities(this.level)) {
+        
+        for (let memoryCell of memory.value.iterateCells(this.level)) {
             let lastSeenTime = memoryCell.turn;
-            let entity = memoryCell.entity;
-            if (entity.hasComponents(Position, Tile)) {
-                let vec = entity.Position.coordinates;
-                let entry = this.grid.getCart(vec);
+            for (let entity of memoryCell) {
+                if (entity.hasComponents(Position, Tile)) {
+                    let vec = entity.Position.coordinates;
+                    let entry = this.grid.getCart(vec);
 
-                if (entry.seq != this.seq || entry.entity == null ||
-                    entry.entity.Tile.zIndex < entity.Tile.zIndex) {
+                    if (entry.seq != this.seq || entry.entity == null ||
+                        entry.entity.Tile.zIndex < entity.Tile.zIndex) {
 
-                    entry.entity = entity;
-                    entry.seq = this.seq;
-                    entry.current = lastSeenTime == this.level.turn;
+                        entry.entity = entity;
+                        entry.seq = this.seq;
+                        entry.current = lastSeenTime == this.level.turn;
+                    }
                 }
             }
         }

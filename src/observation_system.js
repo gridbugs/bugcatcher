@@ -2,6 +2,7 @@ import {Vec2} from './vec2.js';
 import {LightEntity} from './entity.js';
 import {tableIterator} from './util.js';
 import {OrdinalDirections, OrdinalVectors} from './direction.js';
+import {MemoryCell} from './memory_cell.js';
 
 import {
     PlayerCharacter,
@@ -9,7 +10,8 @@ import {
     Opacity,
     Vision,
     Name,
-    Tile
+    Tile,
+    Memory
 } from './component.js';
 
 import {ActionType} from './action_type.js';
@@ -42,23 +44,7 @@ class ObservationCell {
 
 }
 
-class MemoryCell {
-    constructor(entity, turn) {
-        this.entity = new LightEntity();
-        this.turn = turn;
 
-        //console.debug(entity);
-        if (entity.hasComponent(Position)) {
-            this.entity.addComponent(entity.Position.clone());
-        }
-        if (entity.hasComponent(Tile)) {
-            this.entity.addComponent(entity.Tile.clone());
-        }
-        if (entity.hasComponent(Name)) {
-            this.entity.addComponent(entity.Name.clone());
-        }
-    }
-}
 
 export class ObservationSystem {
     constructor(level, numCols, numRows) {
@@ -83,15 +69,17 @@ export class ObservationSystem {
 
     run(entity) {
         this.updateAll();
-        if (entity.hasComponent(Vision)) {
+        if (entity.hasComponents(Vision, Memory)) {
+            entity.Memory.turn = this.level.turn;
             let visionDistance = entity.Vision.distance;
             let eyePosition = entity.Position.coordinates;
             for (let observationCell of entity.Actor.observe(eyePosition, visionDistance, this.grid)) {
                 let entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
                 let memoryCell = entity.Memory.value.getCart(this.level, observationCell.coordinates);
                 memoryCell.clear();
+                memoryCell.turn = this.level.turn;
                 for (let e of entities) {
-                    memoryCell.add(new MemoryCell(e, this.level.turn));
+                    memoryCell.see(e);
                 }
             }
         }

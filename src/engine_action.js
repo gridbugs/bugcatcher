@@ -39,3 +39,33 @@ export class ExitComponentCooldown extends Action {
     }
 }
 ExitComponentCooldown.type = ActionType.ExitComponentCooldown;
+
+export class CallFunction extends Action {
+    constructor(fn, entity=null, description='') {
+        super();
+        this.fn = fn;
+        this.entity = entity;
+        this.description = description;
+    }
+
+    commit() {
+        this.fn();
+    }
+}
+CallFunction.type = ActionType.CallFunction;
+
+export class ActionPair extends IndirectAction {
+    constructor(first, second) {
+        super();
+        this.first = first;
+        this.second = second;
+    }
+
+    commit(level) {
+        level.scheduleImmediateAction(this.first);
+        level.scheduleImmediateAction(this.second);
+    }
+}
+ActionPair.type = ActionType.ActionPair;
+
+
