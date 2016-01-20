@@ -9,7 +9,8 @@ import {
     Defence,
     Attack,
     Accuracy,
-    Dodge
+    Dodge,
+    PlayerCharacter
 } from './component.js';
 
 const STATISTICS = [Attack, Defence, Accuracy, Dodge];
@@ -98,18 +99,18 @@ export class HudSystem {
                     </div>
                     <div class="inventory-item-name">${item.Name.shortName}</div>
                     <div class="inventory-slot-statistics">${statistics}</div>
-                    ${inventoryCooldown}
                 </div>
+                ${inventoryCooldown}
             `;
         }
         return `
             <div class="inventory-slot">
                 ${equipped}
+                ${inventoryItem}
                 <div class="inventory-slot-number">${index}.</div>
                 <div class="inventory-slot-status-container">
                 ${inventoryStatus}
                 </div>
-                ${inventoryItem}
             </div>
         `;
     }
@@ -153,6 +154,9 @@ export class HudSystem {
     }
 
     run(entity) {
+        if (!entity.hasComponent(PlayerCharacter)) {
+            return;
+        }
         this.$hudHealth.empty();
         this.$hudHealth.append(`<span class="name">Health:</span>
                                 <span class="value">${entity.Health.value}/${entity.Health.maxValue}</span>`);

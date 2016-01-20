@@ -73,6 +73,7 @@ export class Level {
             if (action.direct && relativeTime > 0) {
                 this.observationSystem.run(this.playerCharacter);
                 this.rendererSystem.run(this.playerCharacter);
+                this.hudSystem.run(this.playerCharacter);
                 await mdelay(relativeTime);
             }
         }, relativeTime, /* immediate */ true);
@@ -111,9 +112,7 @@ Level.prototype.applyAction = function(action) {
 Level.prototype.gameStep = async function(entity) {
     this.observationSystem.run(entity);
     this.rendererSystem.run(entity);
-    if (entity.hasComponent(PlayerCharacter)) {
-        this.hudSystem.run(entity);
-    }
+    this.hudSystem.run(entity);
 
     var action = await entity.Actor.getAction(this, entity);
 
@@ -123,6 +122,7 @@ Level.prototype.gameStep = async function(entity) {
         if (action.direct) {
             this.observationSystem.run(entity);
             this.rendererSystem.run(entity);
+            this.hudSystem.run(entity);
         }
         if (!action.shouldReschedule()) {
             return;

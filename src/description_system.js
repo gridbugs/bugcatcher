@@ -122,12 +122,12 @@ export class DescriptionSystem {
             break;
         case ActionType.EquipItem:
             if (action.entity.hasComponent(PlayerCharacter)) {
-                this.printMessage(`You equip the ${action.item.Name.fullName}.`);
+                this.printMessage(`You start channeling the ${action.item.Name.fullName}.`);
             }
             break;
         case ActionType.UnequipItem:
             if (action.entity.hasComponent(PlayerCharacter)) {
-                this.printMessage(`You unequip the ${action.item.Name.fullName}.`);
+                this.printMessage(`You stop channeling the ${action.item.Name.fullName}.`);
             }
             break;
         }

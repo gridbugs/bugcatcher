@@ -48,7 +48,8 @@ import {
     Wait,
     EnterCooldown,
     EquipItem,
-    UnequipItem
+    UnequipItem,
+    ActionPair
 } from './action.js';
 
 import {
@@ -396,7 +397,7 @@ async function dropItem(level, entity) {
 }
 
 async function equipItem(level, entity) {
-    level.descriptionSystem.printMessage("Equip from which slot (1-8)?");
+    level.descriptionSystem.printMessage("Channel from which slot (1-8)?");
     var index = parseInt(await getChar());
     if (index >= 1 && index <= 8) {
         var item = entity.Inventory.inventory.get(index);
@@ -437,7 +438,12 @@ async function useAbility(level, entity) {
         } else if (item.hasComponent(Cooldown)) {
             level.print('This item is cooling down.');
         } else {
-            return item.Ability.getAction(level, entity);
+            var action = await item.Ability.getAction(level, entity);
+            if (entity.Equipper.item == item) {
+                return new ActionPair(new UnequipItem(entity), action);
+            } else {
+                return action;
+            }
         }
     } else {
         level.descriptionSystem.printMessage("Ignoring");
@@ -450,18 +456,16 @@ async function jumpAbility(level, entity) {
             level.print(`[${this.entity.Name.fullName}] Jump to where?`);
         }
         var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
-        level.scheduleImmediateAction(new EnterCooldown(this.entity, 2+Math.floor(path.length/2)));
-        return new Jump(entity, path);
+        return new ActionPair(new Jump(entity, path), new EnterCooldown(this.entity, 2+Math.floor(path.length/2)));
     } catch (e) {
         return null;
     }
 }
 
 async function antAbility(level, entity) {
-    level.scheduleImmediateAction(new EnterCooldown(this.entity, 15));
-    return new CallFunction(() => {
+    return new ActionPair(new CallFunction(() => {
         entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
-    }, `[${this.entity.Name.fullName}] You gain ant-like strength.`);
+    }, `[${this.entity.Name.fullName}] You gain ant-like strength.`), new EnterCooldown(this.entity, 15));
 }
 
 async function getPlayerAction(level, entity) {

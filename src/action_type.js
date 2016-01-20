@@ -29,5 +29,6 @@ export const ActionType = mkenum(
     'ExitComponentCooldown',
     'EnterCooldown',
     'EquipItem',
-    'UnequipItem'
+    'UnequipItem',
+    'ActionPair'
 );
