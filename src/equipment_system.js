@@ -1,6 +1,6 @@
 import {ActionType} from './action_type.js';
 import {
-    Equipper,
+    EquipmentSlot,
     Cooldown
 } from './component.js';
 import {
@@ -18,14 +18,14 @@ export class EquipmentSystem {
     check(action) {
         switch (action.type) {
         case ActionType.DropItem:
-            if (action.entity.hasComponent(Equipper) && action.entity.Equipper.item == action.item) {
+            if (action.entity.hasComponent(EquipmentSlot) && action.entity.EquipmentSlot.item == action.item) {
                 action.fail();
                 this.level.scheduleImmediateAction(new UnequipItem(action.entity));
                 this.level.scheduleImmediateAction(new DropItem(action.entity, action.index));
             }
             break;
         case ActionType.UnequipItem:
-            if (action.entity.Equipper.item == null) {
+            if (action.entity.EquipmentSlot.item == null) {
                 action.fail();
             }
             break;

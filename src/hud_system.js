@@ -38,7 +38,7 @@ export class HudSystem {
         var equipped = "";
         if (item != null) {
 
-            if (entity.Equipper.item == item) {
+            if (entity.EquipmentSlot.item == item) {
                 equipped = '<div class="inventory-slot-equipped"></div>';
             }
 
@@ -89,6 +89,8 @@ export class HudSystem {
             if (item.hasComponent(Ability) && item.hasComponent(Cooldown)) {
                 inventoryCooldown = '<div class="inventory-slot-cooldown"></div>';
                 inventoryStatus = `<div class="inventory-slot-status" style="font-size:12px">cooldown(${item.Cooldown.ticksRemaining})</div>`;
+            } else if (entity.EquipmentSlot.item == item) {
+                inventoryStatus = `<div class="inventory-slot-status">channeling</div>`;
             } else {
                 inventoryStatus = `<div class="inventory-slot-status">ready</div>`;
             }
@@ -174,12 +176,12 @@ export class HudSystem {
         this.$hudTitle.append(`<span id="hud-title-player">${entity.Name.fullName}</span>`);
 
         this.$hudStatistics.empty();
-        if (entity.Equipper.item == null) {
+        if (entity.EquipmentSlot.item == null) {
             this.$hudStatistics.append(this.formatBaseStatistics(entity));
         } else {
             this.$hudTitle.append(`<span id="hud-title-plus"> + </span><span id="hud-title-equipped">
-                                    ${entity.Equipper.item.Name.shortName}</span></div>`);
-            this.$hudStatistics.append(this.formatEquippedStatistics(entity, entity.Equipper.item));
+                                    ${entity.EquipmentSlot.item.Name.shortName}</span></div>`);
+            this.$hudStatistics.append(this.formatEquippedStatistics(entity, entity.EquipmentSlot.item));
         }
 
         this.$inventoryContainer.empty();

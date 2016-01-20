@@ -359,7 +359,7 @@ export class EquipItem extends Action {
     }
 
     commit() {
-        this.entity.Equipper.item = this.item;
+        this.entity.EquipmentSlot.item = this.item;
     }
 }
 EquipItem.type = ActionType.EquipItem;
@@ -368,11 +368,11 @@ export class UnequipItem extends Action {
     constructor(entity) {
         super();
         this.entity = entity;
-        this.item = entity.Equipper.item;
+        this.item = entity.EquipmentSlot.item;
     }
 
     commit() {
-        this.entity.Equipper.item = null;
+        this.entity.EquipmentSlot.item = null;
     }
 }
 UnequipItem.type = ActionType.UnequipItem;

@@ -29,7 +29,7 @@ import {
     Pushable,
     CanPush,
     Cooldown,
-    Equipper
+    EquipmentSlot
 } from './component.js';
 
 import {Level} from './level.js';
@@ -161,12 +161,12 @@ function makeDownStairs(x, y) {
     return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
 }
 
-function makeWorkerAntLarvae(x, y) {
+function makeAntLarvae(x, y) {
     return new Entity(  new Position(x, y),
                         new Tile('(', 'blue', null, 2), 
                         new Opacity(0),
                         new Getable(),
-                        new Name('worker ant larvae', 'W. Ant Larvae'),
+                        new Name('ant larvae', 'Ant Larvae'),
                         new Health(2),
                         new Defence(1),
                         new Attack(0),
@@ -208,7 +208,7 @@ function makeAnt(x, y) {
                         new Tile('a', 'blue', null, 2), 
                         new Opacity(0), 
                         new Getable(), 
-                        new Name('worker ant', 'Worker Ant'),
+                        new Name('ant', 'Ant'),
                         new Ability(antAbility),
                         new Health(4),
                         new Defence(2),
@@ -247,7 +247,7 @@ function makePlayerCharacter(x, y) {
                         new Dodge(2),
                         new Inventory(8),
                         new Name("Player"),
-                        new Equipper()
+                        new EquipmentSlot()
                     );
 }
 
@@ -294,7 +294,7 @@ function initWorld(str) {
                 break;
             case '(':
                 entities.push(makeFloor(j, i));
-                entities.push(makeWorkerAntLarvae(j, i));
+                entities.push(makeAntLarvae(j, i));
                 break;
             case ')':
                 entities.push(makeFloor(j, i));
@@ -439,7 +439,7 @@ async function useAbility(level, entity) {
             level.print('This item is cooling down.');
         } else {
             var action = await item.Ability.getAction(level, entity);
-            if (entity.Equipper.item == item) {
+            if (entity.EquipmentSlot.item == item) {
                 return new ActionPair(new UnequipItem(entity), action);
             } else {
                 return action;
@@ -536,7 +536,7 @@ async function getPlayerAction(level, entity) {
             }
             break;
         case KeyCodes.Unequip:
-            if (entity.Equipper.item != null) {
+            if (entity.EquipmentSlot.item != null) {
                 return new UnequipItem(entity);
             }
             break;
