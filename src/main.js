@@ -1,5 +1,6 @@
 import {getKey, getKeyCode, getChar} from './input.js';
-import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors} from './direction.js';
+import {arrayRandom} from './util.js';
+import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors, Directions} from './direction.js';
 import {Entity} from './entity.js';
 import {detectVisibleArea} from './recursive_shadowcast.js';
 import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
@@ -30,7 +31,10 @@ import {
     CanPush,
     Cooldown,
     EquipmentSlot,
-    Timeout
+    Timeout,
+    WalkTime,
+    CombatNeutral,
+    Noteworthy
 } from './component.js';
 
 import {Level} from './level.js';
@@ -71,12 +75,12 @@ var surfaceString = [
 '&      &      ###################....................#     &          &&&', 
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
-'&             #........#........#..))((..............#             &    &', 
-'& &           #.................#..........t.........+                  &', 
-'&             #........#........#.@>.ag..............#   &   &        & &', 
-'&     #############.####........#....a.....t.........#             &    &', 
+'&             #........#........#....................#             &    &', 
+'& &           #.................#....................+                  &', 
+'&             #........#........#.@>.a...............#   &   &        & &', 
+'&     #############.####........#....................#             &    &', 
 '&     #................#.............................#           &      &', 
-'&   & #.........................#.***......t.........#                  &', 
+'&   & #.........................#.***................#                  &', 
 '&     #................#........#...*................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
@@ -131,6 +135,19 @@ var dungeonString = [
 var surfaceLevel;
 var dungeonLevel;
 
+function getRandomMovement(level, entity) {
+    return new Walk(entity, arrayRandom([CardinalDirections.North, CardinalDirections.East, CardinalDirections.South, CardinalDirections.West]));
+}
+function blindObserver(eyePosition, viewDistance, grid) {
+}
+function getWait(level, entity) {
+    return new Wait(entity);
+}
+
+function moveTowardsPlayer(level, entity) {
+
+}
+
 function makeTree(x, y) {
     return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5), new Name('tree'));
 }
@@ -153,13 +170,13 @@ function makeFloor(x, y) {
     return new Entity(new Position(x, y), new Tile('.', 'gray', null, 0), new Opacity(0));
 }
 function makeDoor(x, y) {
-    return new Entity(new Position(x, y), new Tile('+', '#888888', '#444444', 1), new Opacity(1), new Door(), new Solid());
+    return new Entity(new Position(x, y), new Tile('+', '#888888', '#444444', 1), new Opacity(1), new Door(), new Solid(), new Noteworthy());
 }
 function makeUpStairs(x, y) {
-    return new Entity(new Position(x, y), new Tile('<', 'gray', null, 1), new Opacity(0), new UpStairs());
+    return new Entity(new Position(x, y), new Tile('<', 'gray', null, 1), new Opacity(0), new UpStairs(), new Noteworthy());
 }
 function makeDownStairs(x, y) {
-    return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs());
+    return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs(), new Noteworthy());
 }
 
 function becomePupa(entity, health, attack, defence, accuracy, dodge, fullName, shortName=fullName) {
@@ -172,6 +189,7 @@ function becomePupa(entity, health, attack, defence, accuracy, dodge, fullName, 
     entity.Name.fullName = fullName;
     entity.Name.shortName = shortName;
     entity.Tile.character = '[';
+    entity.Actor.getAction = getWait;
 }
 
 function makeAntLarvae(x, y) {
@@ -185,9 +203,15 @@ function makeAntLarvae(x, y) {
                         new Attack(0),
                         new Dodge(1),
                         new Accuracy(0),
+                        new Actor(blindObserver, getRandomMovement),
+                        new Memory(),
+                        new Collider(),
+                        new WalkTime(4),
+                        new CombatNeutral(),
                         new Timeout(20, (entity) => {
                             becomePupa(entity, 3, 0, 10, 0, 0, 'ant pupa', 'Ant Pupa')
-                        }, 'The ant larvae becomes a pupa.')
+                        }, 'The ant larvae becomes a pupa.'),
+                        new Noteworthy()
                     );
 }
 
@@ -201,7 +225,17 @@ function makeGrasshopperLarvae(x, y) {
                         new Defence(1),
                         new Attack(0),
                         new Dodge(1),
-                        new Accuracy(0)
+                        new Accuracy(0),
+                        new Noteworthy(),
+                        new Actor(blindObserver, getRandomMovement),
+                        new Memory(),
+                        new Collider(),
+                        new WalkTime(3),
+                        new CombatNeutral(),
+                        new Timeout(20, (entity) => {
+                            becomePupa(entity, 4, 0, 8, 0, 0, 'grasshopper pupa', 'Gr Hppr Pupa')
+                        }, 'The grasshopper larvae becomes a pupa.')
+ 
                     );
 }
 
@@ -216,7 +250,13 @@ function makeGrasshopper(x, y) {
                         new Defence(1),
                         new Attack(5),
                         new Dodge(6),
-                        new Accuracy(2)
+                        new Accuracy(2),
+                        new Noteworthy(),
+                        new Actor(blindObserver, getRandomMovement),
+                        new Memory(),
+                        new Collider(),
+                        new WalkTime(3),
+                        new Combatant(1)
                     );
 }
 function makeAnt(x, y) {
@@ -230,7 +270,13 @@ function makeAnt(x, y) {
                         new Defence(2),
                         new Attack(4),
                         new Dodge(2),
-                        new Accuracy(3)
+                        new Accuracy(3),
+                        new Noteworthy(),
+                        new Actor(detectVisibleArea, moveTowardsPlayer),
+                        new Memory(),
+                        new Collider(),
+                        new WalkTime(3),
+                        new Combatant(1)
                     );
 }
 
@@ -238,11 +284,12 @@ function makeTargetDummy(x, y) {
     return new Entity(  new Position(x, y), 
                         new Tile('t', 'red', null, 3), 
                         new Opacity(0),
-                        new Combatant(),
+                        new Combatant(1),
                         new Health(4),
                         new Defence(1),
                         new Dodge(1),
-                        new Name("target dummy")
+                        new Name("target dummy"),
+                        new Noteworthy()
                     );
 }
 
@@ -255,13 +302,14 @@ function makePlayerCharacter(x, y) {
                         new Memory(),
                         new Vision(20),
                         new Opacity(0.2),
-                        new Combatant(),
+                        new Combatant(0),
                         new Accuracy(2),
                         new Attack(2),
                         new Health(11),
                         new Defence(1),
                         new Dodge(2),
                         new Inventory(8),
+                        new WalkTime(1),
                         new Name("Player"),
                         new EquipmentSlot()
                     );
@@ -632,12 +680,12 @@ $(() => {(async function() {
                 e.Position.level = surfaceLevel;
                 e.Position.addToSpacialHash();
             }
+            if (e.hasComponent(Actor)) {
+                e.Actor.enable(surfaceLevel);
+            }
         }
 
-    
         playerCharacter = getPlayerCharacter(surfaceLevel.entities);
-
-        surfaceLevel.scheduleActorTurn(playerCharacter, 0);
 
         surfaceLevel.setPlayerCharacter(playerCharacter);
         dungeonLevel.setPlayerCharacter(playerCharacter);

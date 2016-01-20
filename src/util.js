@@ -40,3 +40,7 @@ export function arraySwap(array, i, j) {
     array[i] = array[j];
     array[j] = tmp;
 }
+
+export function arrayRandom(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}

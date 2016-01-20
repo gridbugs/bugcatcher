@@ -9,7 +9,9 @@ import {
     Tile,
     Getable,
     Position,
-    Cooldown
+    Cooldown,
+    WalkTime,
+    Actor
 } from './component.js';
 
 import {
@@ -43,6 +45,13 @@ export class Walk extends IndirectAction {
         level.scheduleImmediateAction(
             new Move(this.entity, this.toCoord)
         );
+    }
+
+    get time() {
+        if (this.entity.hasComponent(WalkTime)) {
+            return this.entity.WalkTime.value;
+        }
+        return 1;
     }
 }
 Walk.type = ActionType.Walk;
@@ -308,6 +317,9 @@ export class GetItem extends Action {
     commit(level) {
         level.deleteEntity(this.item);
         this.entity.Inventory.inventory.insert(this.item);
+        if (this.item.hasComponent(Actor)) {
+            this.item.Actor.disable(level);
+        }
     }
 }
 GetItem.type = ActionType.GetItem;
@@ -324,6 +336,9 @@ export class DropItem extends Action {
         this.entity.Inventory.inventory.delete(this.index);
         var vec = this.entity.Position.coordinates;
         level.addEntity(this.item, vec.x, vec.y);
+        if (this.item.hasComponent(Actor)) {
+            this.item.Actor.enable(level);
+        }
     }
 }
 DropItem.type = ActionType.DropItem;

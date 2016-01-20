@@ -20,6 +20,10 @@ export class Action {
     }
 
     commit() {}
+
+    get time() {
+        return 1;
+    }
 }
 
 export class IndirectAction extends Action {

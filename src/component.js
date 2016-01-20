@@ -133,6 +133,19 @@ export class Actor extends Component {
         super();
         this.observe = observe;
         this.getAction = getAction;
+        this.active = false;
+        this.scheduled = false;
+    }
+
+    enable(level) {
+        this.active = true;
+        if (!this.scheduled) {
+            level.scheduleActorTurn(this.entity, 0);
+        }
+    }
+
+    disable(level) {
+        this.active = false;
     }
 }
 Actor.type = ComponentType.Actor;
@@ -197,7 +210,7 @@ export class UpStairs extends Component {
 }
 UpStairs.type = ComponentType.UpStairs;
 
-export class Combatant extends Component {}
+export class Combatant extends Statistic {}
 Combatant.type = ComponentType.Combatant;
 
 export class Health extends Statistic {
@@ -321,3 +334,12 @@ export class Timeout extends Component {
     }
 }
 Timeout.type = ComponentType.Timeout;
+
+export class WalkTime extends Statistic {}
+WalkTime.type = ComponentType.WalkTime;
+
+export class CombatNeutral extends Component {}
+CombatNeutral.type = ComponentType.CombatNeutral;
+
+export class Noteworthy extends Component {}
+Noteworthy.type = ComponentType.Noteworthy;

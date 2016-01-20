@@ -13,7 +13,9 @@ import {
     Accuracy,
     Dodge,
     Attack,
-    Defence
+    Defence,
+    CombatNeutral,
+    PlayerCharacter
 } from './component.js';
 
 
@@ -23,12 +25,24 @@ export class CombatSystem {
     }
  
     handleMove(action) {
+        let toCell = this.level.entitySpacialHash.getCart(action.destination);
         if (action.entity.hasComponent(Combatant)) {
-            let toCell = this.level.entitySpacialHash.getCart(action.destination);
-            for (let e of toCell.keys()) {
+            for (let e of toCell) {
                 if (e.hasComponent(Combatant)) {
                     action.fail();
-                    this.level.scheduleImmediateAction(new MeleeAttack(action.entity, e));
+                    if (e.Combatant.value != action.entity.Combatant.value) {
+                        this.level.scheduleImmediateAction(new MeleeAttack(action.entity, e));
+                    }
+                    break;
+                } else if (e.hasComponent(CombatNeutral) && !action.entity.hasComponent(PlayerCharacter)) {
+                    action.fail();
+                    break;
+                }
+            }
+        } else if (action.entity.hasComponent(CombatNeutral)) {
+            for (let e of toCell) {
+                if (e.hasAnyComponent(CombatNeutral, Combatant) && !e.hasComponent(PlayerCharacter)) {
+                    action.fail();
                     break;
                 }
             }
@@ -63,7 +77,7 @@ export class CombatSystem {
         case ActionType.JumpPart:
             if (action.entity.hasComponent(Combatant)) {
                 let toCell = this.level.entitySpacialHash.getCart(action.destination);
-                for (let e of toCell.keys()) {
+                for (let e of toCell) {
                     if (e.hasComponents(Combatant)) {
                         action.fail();
                         break;

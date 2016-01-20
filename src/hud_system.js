@@ -10,7 +10,9 @@ import {
     Attack,
     Accuracy,
     Dodge,
-    PlayerCharacter
+    PlayerCharacter,
+    Noteworthy,
+    Tile
 } from './component.js';
 
 const STATISTICS = [Attack, Defence, Accuracy, Dodge];
@@ -23,6 +25,7 @@ export class HudSystem {
         this.$hudStatistics = $('#hud-statistics');
         this.$hudHealth = $('#hud-health');
         this.$hudModifiers = $('#hud-modifiers');
+        this.$hudHere = $('#hud-here');
         this.$inventoryContainer = $('#inventory-container');
     }
 
@@ -189,6 +192,13 @@ export class HudSystem {
             this.$inventoryContainer.append(this.formatInventorySlot(entity, index, item));
         }
 
+        this.$hudHere.empty();
+        this.$hudHere.append('<span>Here: </span>');
+        for (let e of entity.Position.level.entitySpacialHash.getCart(entity.Position.coordinates)) {
+            if (e.hasComponent(Noteworthy) && e.hasComponent(Tile)) {
+                this.$hudHere.append(`<span style="color:${e.Tile.colour};font-weight:bold">${e.Tile.character}</span>`);
+            }
+        }
     }
 
 }

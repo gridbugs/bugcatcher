@@ -1,7 +1,7 @@
 import {Grid} from './grid.js';
 import {getDefaultDrawer} from './drawer.js';
 
-import {Position, Tile} from './component.js';
+import {Position, Tile, PlayerCharacter} from './component.js';
 
 export class RendererSystem {
     constructor(level, numCols, numRows, drawer = getDefaultDrawer()) {
@@ -19,6 +19,10 @@ export class RendererSystem {
     }
 
     run(entity) {
+
+        if (!entity.hasComponent(PlayerCharacter)) {
+            return;
+        }
 
         var memory = entity.Memory;
 

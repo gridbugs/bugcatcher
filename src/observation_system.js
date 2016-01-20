@@ -1,5 +1,4 @@
 import {Vec2} from './vec2.js';
-import {LightEntity} from './entity.js';
 import {tableIterator} from './util.js';
 import {OrdinalDirections, OrdinalVectors} from './direction.js';
 import {MemoryCell} from './memory_cell.js';
@@ -58,12 +57,16 @@ export class ObservationSystem {
             cell.update(entities);
             this.grid.set(j, i, cell);
         }
+        this.dirty = true;
     }
 
     updateAll() {
-        for (let observationCell of this.grid) {
-            let entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
-            observationCell.update(entities);
+        if (this.dirty) {
+            for (let observationCell of this.grid) {
+                let entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
+                observationCell.update(entities);
+            }
+            this.dirty = false;
         }
     }
 
@@ -82,6 +85,21 @@ export class ObservationSystem {
                     memoryCell.see(e);
                 }
             }
+        }
+    }
+
+    check(action) {
+        switch (action.type) {
+        case ActionType.OpenDoor:
+        case ActionType.CloseDoor:
+            this.dirty = true;
+            break;
+        case ActionType.Push:
+        case ActionType.Move:
+            if (action.entity.hasComponent(Opacity) && action.entity.Opacity != 0) {
+                this.dirty = true;
+            }
+            break;
         }
     }
 }

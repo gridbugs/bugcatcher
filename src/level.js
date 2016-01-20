@@ -15,7 +15,11 @@ import {CombatSystem} from './combat_system.js';
 import {PushSystem} from './push_system.js';
 import {EquipmentSystem} from './equipment_system.js';
 
-import {PlayerCharacter, Position} from './component.js';
+import {
+    PlayerCharacter,
+    Position,
+    Actor
+} from './component.js';
 
 export class Level {
     constructor(width, height, entities) {
@@ -62,7 +66,9 @@ export class Level {
     }
 
     scheduleActorTurn(entity, relativeTime = 1) {
+        entity.Actor.scheduled = true;
         this.schedule.scheduleTask(async () => {
+            entity.scheduled = false;
             await this.gameStep(entity);
         }, relativeTime);
     }
@@ -71,9 +77,12 @@ export class Level {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
             if (action.direct && relativeTime > 0) {
-                this.rendererSystem.run(this.playerCharacter);
                 this.hudSystem.run(this.playerCharacter);
-                await mdelay(relativeTime);
+                if (action.entity == this.playerCharacter) {
+                    console.debug(this);
+                    this.rendererSystem.run(this.playerCharacter);
+                    await mdelay(relativeTime);
+                }
             }
         }, relativeTime, /* immediate */ true);
     }
@@ -97,6 +106,7 @@ Level.prototype.applyAction = function(action) {
     this.combatSystem.check(action);
     this.pushSystem.check(action);
     this.equipmentSystem.check(action);
+    this.observationSystem.check(action);
 
     if (action.success) {
         action.commit(this);
@@ -109,13 +119,20 @@ Level.prototype.applyAction = function(action) {
 }
 
 Level.prototype.gameStep = async function(entity) {
+
+    if (!entity.hasComponent(Actor) || !entity.Actor.active) {
+        return;
+    }
+
     this.observationSystem.run(entity);
     this.rendererSystem.run(entity);
     this.hudSystem.run(entity);
 
     var action = await entity.Actor.getAction(this, entity);
 
-    await mdelay(1);
+    if (entity == this.playerCharacter) {
+        await mdelay(1);
+    }
 
     if (this.applyAction(action)) {
         if (action.direct) {
@@ -129,7 +146,7 @@ Level.prototype.gameStep = async function(entity) {
     }
     
     entity.tickComponents(this);
-    this.scheduleActorTurn(entity);
+    this.scheduleActorTurn(entity, action.time);
 }
 
 Level.prototype.progressSchedule = async function() {
