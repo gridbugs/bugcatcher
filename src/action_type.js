@@ -30,5 +30,6 @@ export const ActionType = mkenum(
     'EnterCooldown',
     'EquipItem',
     'UnequipItem',
-    'ActionPair'
+    'ActionPair',
+    'FailToEquipItem'
 );

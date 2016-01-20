@@ -130,6 +130,11 @@ export class DescriptionSystem {
                 this.printMessage(`You stop channeling the ${action.item.Name.fullName}.`);
             }
             break;
+        case ActionType.FailToEquipItem:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage(`You fail to channel the ${action.item.Name.fullName} as it is cooling down.`);
+            }
+            break;
         }
     }
 }

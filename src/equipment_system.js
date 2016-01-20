@@ -1,10 +1,13 @@
 import {ActionType} from './action_type.js';
 import {
-    Equipper
+    Equipper,
+    Cooldown
 } from './component.js';
 import {
     DropItem,
-    UnequipItem
+    UnequipItem,
+    EquipItem,
+    FailToEquipItem
 } from './action.js';
 
 export class EquipmentSystem {
@@ -24,6 +27,12 @@ export class EquipmentSystem {
         case ActionType.UnequipItem:
             if (action.entity.Equipper.item == null) {
                 action.fail();
+            }
+            break;
+        case ActionType.EquipItem:
+            if (action.item.hasComponent(Cooldown)) {
+                action.fail();
+                this.level.scheduleImmediateAction(new FailToEquipItem(action.entity, action.item));
             }
             break;
         }

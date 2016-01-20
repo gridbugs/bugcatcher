@@ -390,3 +390,12 @@ export class ActionPair extends IndirectAction {
     }
 }
 ActionPair.type = ActionType.ActionPair;
+
+export class FailToEquipItem extends IndirectAction {
+    constructor(entity, item) {
+        super();
+        this.entity = entity;
+        this.item = item;
+    }
+}
+FailToEquipItem.type = ActionType.FailToEquipItem;
