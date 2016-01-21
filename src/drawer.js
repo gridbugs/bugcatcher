@@ -234,7 +234,9 @@ export class Drawer {
     }
 }
 export function initializeDefaultDrawer(numCols, numRows, canvas) {
-    Drawer.defaultDrawer = new Drawer(numCols, numRows, canvas);
+    if (Drawer.defaultDrawer == undefined) {
+        Drawer.defaultDrawer = new Drawer(numCols, numRows, canvas);
+    }
 }
 export function getDefaultDrawer() {
     return Drawer.defaultDrawer;

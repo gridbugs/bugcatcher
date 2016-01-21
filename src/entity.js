@@ -83,7 +83,7 @@ export class LightEntity {
 }
 
 export class Entity extends LightEntity {
-    constructor(...components) {
+    constructor(components) {
         super(components);
         this.id = Entity.nextId;
         ++Entity.nextId;

@@ -6,6 +6,9 @@ import {detectVisibleArea} from './recursive_shadowcast.js';
 import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
 import {shortestPathThroughGrid, shortestPathThroughGridUntilPredicate} from './search.js';
 import {Vec2} from './vec2.js';
+import {getPlayerAction} from './player_controller.js';
+import {jumpAbility, antAbility} from './ability.js';
+import * as Config from './config.js';
 import {
     Position,
     Tile,
@@ -222,34 +225,34 @@ function moveTowardsPlayer(level, entity) {
 }
 
 function makeTree(x, y) {
-    return new Entity(new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5), new Name('tree'));
+    return new Entity([new Position(x, y), new Tile('&', 'green', null, 1), new Solid(), new Opacity(0.5), new Name('tree')]);
 }
 function makeWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1), new Name('wall'));
+    return new Entity([new Position(x, y), new Tile('#', '#222222', '#888888', 1), new Solid(), new Opacity(1), new Name('wall')]);
 }
 function makeDirtWall(x, y) {
-    return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1), new Name('wall'));
+    return new Entity([new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1), new Name('wall')]);
 }
 function makeBoulder(x, y) {
-    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0), new Pushable(), new Collider(), new Name('boulder'));
+    return new Entity([new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0), new Pushable(), new Collider(), new Name('boulder')]);
 }
 function makeDirt(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
+    return new Entity([new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0)]);
 }
 function makeGrass(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'darkgreen', null, 0), new Opacity(0));
+    return new Entity([new Position(x, y), new Tile('.', 'darkgreen', null, 0), new Opacity(0)]);
 }
 function makeFloor(x, y) {
-    return new Entity(new Position(x, y), new Tile('.', 'gray', null, 0), new Opacity(0));
+    return new Entity([new Position(x, y), new Tile('.', 'gray', null, 0), new Opacity(0)]);
 }
 function makeDoor(x, y) {
-    return new Entity(new Position(x, y), new Tile('+', '#888888', '#444444', 1), new Opacity(1), new Door(), new Solid(), new Noteworthy());
+    return new Entity([new Position(x, y), new Tile('+', '#888888', '#444444', 1), new Opacity(1), new Door(), new Solid(), new Noteworthy()]);
 }
 function makeUpStairs(x, y) {
-    return new Entity(new Position(x, y), new Tile('<', 'gray', null, 1), new Opacity(0), new UpStairs(), new Noteworthy());
+    return new Entity([new Position(x, y), new Tile('<', 'gray', null, 1), new Opacity(0), new UpStairs(), new Noteworthy()]);
 }
 function makeDownStairs(x, y) {
-    return new Entity(new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs(), new Noteworthy());
+    return new Entity([new Position(x, y), new Tile('>', 'gray', null, 1), new Opacity(0), new DownStairs(), new Noteworthy()]);
 }
 
 function becomePupa(entity, health, attack, defence, accuracy, dodge, fullName, shortName=fullName) {
@@ -266,7 +269,7 @@ function becomePupa(entity, health, attack, defence, accuracy, dodge, fullName, 
 }
 
 function makeAntLarvae(x, y) {
-    return new Entity(  new Position(x, y),
+    return new Entity([ new Position(x, y),
                         new Tile('(', 'blue', null, 2), 
                         new Opacity(0),
                         new Getable(),
@@ -285,11 +288,11 @@ function makeAntLarvae(x, y) {
                             becomePupa(entity, 3, 0, 10, 0, 0, 'ant pupa', 'Ant Pupa')
                         }, 'The ant larvae becomes a pupa.'),
                         new Noteworthy()
-                    );
+                    ]);
 }
 
 function makeGrasshopperLarvae(x, y) {
-    return new Entity(  new Position(x, y),
+    return new Entity([ new Position(x, y),
                         new Tile('(', 'green', null, 2),
                         new Opacity(0),
                         new Getable(),
@@ -308,12 +311,11 @@ function makeGrasshopperLarvae(x, y) {
                         new Timeout(20, (entity) => {
                             becomePupa(entity, 4, 0, 8, 0, 0, 'grasshopper pupa', 'Gr Hppr Pupa')
                         }, 'The grasshopper larvae becomes a pupa.')
- 
-                    );
+                    ]);
 }
 
 function makeGrasshopper(x, y) {
-    return new Entity(  new Position(x, y),
+    return new Entity([ new Position(x, y),
                         new Tile('g', 'green', null, 2), 
                         new Opacity(0), 
                         new Getable(), 
@@ -332,10 +334,10 @@ function makeGrasshopper(x, y) {
                         new WalkTime(3),
                         new Combatant(1)
                         */
-                    );
+                    ]);
 }
 function makeAnt(x, y) {
-    return new Entity(  new Position(x, y),
+    return new Entity([ new Position(x, y),
                         new Tile('a', 'blue', null, 2), 
                         new Opacity(0), 
                         new Getable(), 
@@ -356,11 +358,11 @@ function makeAnt(x, y) {
                         new Combatant(1),
                         new CanPush()
                         */
-                    );
+                    ]);
 }
 
 function makeTargetDummy(x, y) {
-    return new Entity(  new Position(x, y), 
+    return new Entity([ new Position(x, y), 
                         new Tile('t', 'red', null, 3), 
                         new Opacity(0),
                         new Combatant(1),
@@ -369,11 +371,11 @@ function makeTargetDummy(x, y) {
                         new Dodge(1),
                         new Name("target dummy"),
                         new Noteworthy()
-                    );
+                    ]);
 }
 
 function makePlayerCharacter(x, y) {
-    return new Entity(  new Position(x, y),
+    return new Entity([ new Position(x, y),
                         new Tile('@', 'white', null, 4),
                         new Actor(detectVisibleArea, getPlayerAction),
                         new PlayerCharacter(),
@@ -391,7 +393,7 @@ function makePlayerCharacter(x, y) {
                         new WalkTime(1),
                         new Name("Player"),
                         new EquipmentSlot()
-                    );
+                    ]);
 }
 
 function initWorld(str) {
@@ -467,225 +469,7 @@ function initWorld(str) {
     return entities;
 }
 
-
-
-const KeyCodes = {
-    Left: 37,
-    Up: 38,
-    Right: 39,
-    Down: 40,
-    Close: 67,
-    DownStairs: 190,
-    UpStairs: 188,
-    Ability: 65,
-    Jump: 66,
-    Get: 71,
-    Drop: 68,
-    Wait: 190,
-    Equip: 69,
-    Unequip: 82
-}
-
-
-function closeDoor(level, entity) {
-    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.coordinates, CardinalDirectionVectors)) {
-        for (let e of cell) {
-            if (e.hasComponent(Door) && e.Door.open) {
-                return new CloseDoor(entity, e);
-            }
-        }
-    }
-    return null;
-}
-
-function ascendStairs(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
-    for (let e of cell) {
-        if (e.hasComponent(UpStairs)) {
-            return new Ascend(entity, e);
-        }
-    }
-}
-function descendStairs(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
-    for (let e of cell) {
-        if (e.hasComponent(DownStairs)) {
-            return new Descend(entity, e);
-        }
-    }
-}
-
-function getItem(level, entity) {
-    var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
-    for (let e of cell) {
-        if (e.hasComponent(Getable)) {
-            return new GetItem(entity, e);
-        }
-    }
-}
-
-async function dropItem(level, entity) {
-    level.descriptionSystem.printMessage("Drop from which slot (1-8)?");
-    var index = parseInt(await getChar());
-    if (index >= 1 && index <= 8) {
-        var item = entity.Inventory.inventory.get(index);
-        if (item != null) {
-            return new DropItem(entity, index);
-        } else {
-            level.descriptionSystem.printMessage(`No item in slot ${index}.`);
-        }
-    } else {
-        level.descriptionSystem.printMessage("Ignoring");
-    }
-}
-
-async function equipItem(level, entity) {
-    level.descriptionSystem.printMessage("Channel from which slot (1-8)?");
-    var index = parseInt(await getChar());
-    if (index >= 1 && index <= 8) {
-        var item = entity.Inventory.inventory.get(index);
-        if (item != null) {
-            return new EquipItem(entity, item);
-        } else {
-            level.descriptionSystem.printMessage(`No item in slot ${index}.`);
-        }
-    } else {
-        level.descriptionSystem.printMessage("Ignoring");
-    }
-}
-
-
-
-var teleportChooser, jumpChooser, playerCharacter;
-
-function canSee(entity, vector) {
-    var level = entity.Position.level;
-    var memoryCell = entity.Memory.value.getCart(level, vector);
-    for (let memoryEntry of memoryCell) {
-        if (memoryEntry.turn == level.turn) {
-            return true;
-        }
-    }
-    return false;
-}
-
-async function useAbility(level, entity) {
-    level.descriptionSystem.printMessage("Which ability (1-8)?");
-    var index = parseInt(await getChar());
-    if (index >= 1 && index <= 8) {
-        var item = entity.Inventory.inventory.get(index);
-        if (item == null) {
-            level.descriptionSystem.printMessage(`Slot ${index} is empty.`);
-        } else if (!item.hasComponent(Ability)) {
-            level.descriptionSystem.printMessage(`The ${item.Name.fullName} has no ability.`);
-        } else if (item.hasComponent(Cooldown)) {
-            level.print('This item is cooling down.');
-        } else {
-            var action = await item.Ability.getAction(level, entity);
-            if (entity.EquipmentSlot.item == item) {
-                return new ActionPair(new UnequipItem(entity), action);
-            } else {
-                return action;
-            }
-        }
-    } else {
-        level.descriptionSystem.printMessage("Ignoring");
-    }
-}
-
-async function jumpAbility(level, entity) {
-    try {
-        if (this.entity.hasComponent(Name)) {
-            level.print(`[${this.entity.Name.fullName}] Jump to where?`);
-        }
-        var path = await jumpChooser.getPath(playerCharacter.Position.coordinates, playerCharacter);
-        return new ActionPair(new Jump(entity, path), new EnterCooldown(this.entity, 2+Math.floor(path.length/2)));
-    } catch (e) {
-        return null;
-    }
-}
-
-async function antAbility(level, entity) {
-    return new ActionPair(new CallFunction(() => {
-        entity.addComponent(new CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
-    }, entity, `[${this.entity.Name.fullName}] You gain ant-like strength.`), new EnterCooldown(this.entity, 15));
-}
-
-async function getPlayerAction(level, entity) {
-    while (true) {
-        var key = await getKey();
-        switch (key.keyCode) {
-        case KeyCodes.Up:
-            return new Walk(entity, Directions.North);
-        case KeyCodes.Down:
-            return new Walk(entity, Directions.South);
-        case KeyCodes.Left:
-            return new Walk(entity, Directions.West);
-        case KeyCodes.Right:
-            return new Walk(entity, Directions.East);
-        case KeyCodes.Close:
-            var action = closeDoor(level, entity);
-            if (action != null) {
-                return action;
-            }
-            break;
-        case KeyCodes.DownStairs:
-        case KeyCodes.Wait:
-            if (key.shiftKey) {
-                var action = descendStairs(level, entity);
-                if (action != null) {
-                    return action;
-                }
-            } else {
-                return new Wait(entity);
-            }
-            break;
-        case KeyCodes.UpStairs:
-            if (key.shiftKey) {
-                var action = ascendStairs(level, entity);
-                if (action != null) {
-                    return action;
-                }
-            }
-            break;
-        case KeyCodes.Ability:
-            var action = await useAbility(level, entity);
-            if (action != null) {
-                return action;
-            }
-            break;
-        case KeyCodes.Jump:
-            var action = await jumpAbility(level, entity);
-            if (action != null) {
-                return action;
-            }
-           break;
-        case KeyCodes.Get:
-            var action = getItem(level, entity);
-            if (action != null) {
-                return action;
-            }
-            break;
-        case KeyCodes.Drop:
-            var action = await dropItem(level, entity);
-            if (action != null) {
-                return action;
-            }
-            break;
-        case KeyCodes.Equip:
-            var action = await equipItem(level, entity);
-            if (action != null) {
-                return action;
-            }
-            break;
-        case KeyCodes.Unequip:
-            if (entity.EquipmentSlot.item != null) {
-                return new UnequipItem(entity);
-            }
-            break;
-        }
-    }
-}
+var playerCharacter;
 
 function getPlayerCharacter(entities) {
     for (let e of entities) {
@@ -728,20 +512,10 @@ function processTimeouts(level) {
 
 $(() => {(async function() {
  
+    initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
-    const WIDTH = 74
-    const HEIGHT = 30
-    
-    initializeDefaultDrawer(WIDTH, HEIGHT, document.getElementById("canvas"));
-
-    surfaceLevel = new Level(WIDTH, HEIGHT, initWorld(surfaceString));
-    dungeonLevel = new Level(WIDTH, HEIGHT, initWorld(dungeonString));
-
-    var transparent = 'rgba(0, 0, 0, 0)';
-    var lightYellow = 'rgba(255, 255, 0, 0.25)';
-    var yellow = 'rgba(255, 255, 0, 1)';
-    teleportChooser = new VectorChooser(yellow, true, transparent, transparent, true, transparent, true);
-    jumpChooser = new VectorChooser(yellow, true, lightYellow, transparent, true, transparent, true);
+    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(surfaceString));
+    dungeonLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(dungeonString));
 
     (() => {
         var upStairs, downStairs;
