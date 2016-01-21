@@ -60,6 +60,13 @@ export class Drawer {
         cell.backgroundColour = backgroundColour || this.defaultBackgroundColour;
     }
 
+    drawTile(cell) {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.25)';
+        this.ctx.fillRect(cell.x * this.cellWidth + this.xBackgroundPadding, cell.y * this.cellHeight + this.yBackgroundPadding, this.cellWidth, this.cellHeight);
+        this.ctx.fill();
+    }
+
     draw() {
         this.ctx.beginPath();
 

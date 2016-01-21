@@ -1,6 +1,6 @@
 import {Vec2} from './vec2.js';
 import {tableIterator} from './util.js';
-import {OrdinalDirections, OrdinalVectors} from './direction.js';
+import {OrdinalDirections, OrdinalDirectionVectors} from './direction.js';
 import {MemoryCell} from './memory_cell.js';
 
 import {
@@ -21,7 +21,7 @@ class ObservationCell {
         this.coordinates = new Vec2(x, y);
         this.centre = new Vec2(x + 0.5, y + 0.5);
         this.corners = new Array(4);
-        for (let [direction, vector] of tableIterator(OrdinalDirections, OrdinalVectors)) {
+        for (let [direction, vector] of tableIterator(OrdinalDirections, OrdinalDirectionVectors)) {
             this.corners[direction] = this.centre.add(vector.divide(2));
         }
         this.maxOpacity = 0;

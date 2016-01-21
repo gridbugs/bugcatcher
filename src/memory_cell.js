@@ -13,6 +13,12 @@ function makeMemoryEntity(entity) {
     if (entity.hasComponentType(ComponentType.Name)) {
         ret.addComponent(entity.Name.clone());
     }
+    if (entity.hasComponentType(ComponentType.PlayerCharacter)) {
+        ret.addComponent(entity.PlayerCharacter.clone());
+    }
+    if (entity.hasComponentType(ComponentType.Solid)) {
+        ret.addComponent(entity.Solid.clone());
+    }
     return ret;
 }
 

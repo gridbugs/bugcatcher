@@ -1,5 +1,5 @@
 import {ActionType} from './action_type.js';
-import {CardinalVectors} from './direction.js';
+import {DirectionVectors} from './direction.js';
 import {Action, IndirectAction} from './base_action.js';
 
 import {
@@ -36,7 +36,7 @@ export class Walk extends IndirectAction {
         this.entity = entity;
         this.direction = direction;
         this.fromCoord = entity.Position.coordinates.clone();
-        this.toCoord = this.fromCoord.add(CardinalVectors[direction]);
+        this.toCoord = this.fromCoord.add(DirectionVectors[direction]);
         this.destination = this.toCoord;
         this.source = this.fromCoord;
     }
@@ -62,7 +62,7 @@ export class Push extends Action {
         this.entity = entity;
         this.direction = direction;
         this.source = entity.Position.coordinates.clone();
-        this.destination = this.source.add(CardinalVectors[direction]);
+        this.destination = this.source.add(DirectionVectors[direction]);
     }
 
     commit() {

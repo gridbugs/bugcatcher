@@ -55,6 +55,9 @@ class Component {
             }
         }
     }
+    clone() {
+        return new this.constructor();
+    }
 }
 
 class ValueComponent extends Component {

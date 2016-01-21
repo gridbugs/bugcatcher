@@ -94,6 +94,10 @@ export class Vec2 {
         return Math.sqrt(this.getDistanceSquared(v));
     }
 
+    getManhattenDistance(v) {
+        return Math.abs(this.x - v.x) + Math.abs(this.y - v.y);
+    }
+
     equals(v) {
         return this.x == v.x && this.y == v.y;
     }

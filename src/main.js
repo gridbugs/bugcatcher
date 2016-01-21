@@ -1,9 +1,11 @@
 import {getKey, getKeyCode, getChar} from './input.js';
 import {arrayRandom} from './util.js';
-import {CardinalDirections, CardinalVectors, OrdinalDirections, OrdinalVectors, Directions} from './direction.js';
+import {CardinalDirections, CardinalDirectionVectors, OrdinalDirections, OrdinalDirectionVectors, Directions} from './direction.js';
 import {Entity} from './entity.js';
 import {detectVisibleArea} from './recursive_shadowcast.js';
 import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
+import {shortestPathThroughGrid, shortestPathThroughGridUntilPredicate} from './search.js';
+import {Vec2} from './vec2.js';
 import {
     Position,
     Tile,
@@ -62,7 +64,7 @@ import {
 } from './engine_action.js';
 
 import {VectorChooser} from './vector_chooser.js';
-import {InputCancelled, NoAction} from './exception.js';
+import {InputCancelled, NoAction, NoResults} from './exception.js';
 
 var entities = [];
 
@@ -77,9 +79,9 @@ var surfaceString = [
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
 '& &           #.................#....................+                  &', 
-'&             #........#........#.@>.a...............#   &   &        & &', 
+'&             #........#........#..>.................#   &   &        & &', 
 '&     #############.####........#....................#             &    &', 
-'&     #................#.............................#           &      &', 
+'&     #................#......@.....a................#           &      &', 
 '&   & #.........................#.***................#                  &', 
 '&     #................#........#...*................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
@@ -136,7 +138,7 @@ var surfaceLevel;
 var dungeonLevel;
 
 function getRandomMovement(level, entity) {
-    return new Walk(entity, arrayRandom([CardinalDirections.North, CardinalDirections.East, CardinalDirections.South, CardinalDirections.West]));
+    return new Walk(entity, arrayRandom([Directions.North, Directions.East, Directions.South, Directions.West]));
 }
 function blindObserver(eyePosition, viewDistance, grid) {
 }
@@ -144,8 +146,73 @@ function getWait(level, entity) {
     return new Wait(entity);
 }
 
-function moveTowardsPlayer(level, entity) {
+function shortestPathThroughGridUntilPredicateCardinal(grid, start, predicate, canEnterPredicate) {
+    return shortestPathThroughGridUntilPredicate(grid, start, predicate, canEnterPredicate,
+                                [Directions.North, Directions.East, Directions.South, Directions.West],
+                                () => {return 1;});
+}
 
+function shortestPathThroughGridCardinal(grid, start, end, canEnterPredicate) {
+    return shortestPathThroughGrid(grid, start, end, canEnterPredicate,
+                                [Directions.North, Directions.East, Directions.South, Directions.West],
+                                () => {return 1;},
+                                (current, destination) => {
+                                    return current.getManhattenDistance(destination);
+                                });
+}
+
+function moveTowardsPlayer(level, entity) {
+    var grid = entity.Memory.value.getSpacialHash(level);
+    var canEnter = (entities) => {
+        for (let e of entities) {
+            if (e.hasComponent(Solid)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    try {
+        let path = shortestPathThroughGridUntilPredicateCardinal(
+            grid,
+            entity.Position.coordinates,
+            (entities) => {
+                for (let e of entities) {
+                    if (e.hasComponent(PlayerCharacter)) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            canEnter
+        );
+        entity.Actor.lastPlayerPosition = path.end;
+        return new Walk(entity, path.directions[0]);
+    } catch (e) {
+        if (e instanceof NoResults) {
+            if (entity.Actor.lastPlayerPosition != null) {
+                try {
+                    let path = shortestPathThroughGridCardinal(
+                        grid,
+                        entity.Position.coordinates,
+                        entity.Actor.lastPlayerPosition,
+                        canEnter
+                    );
+                    console.debug(path);
+                    return new Walk(entity, path.directions[0]);
+                } catch (e) {
+                    if (e instanceof NoResults) {
+                        return getRandomMovement(level, entity);
+                    } else {
+                        throw e;
+                    }
+                }
+            }
+        } else {
+            throw e;
+        }
+    }
+
+    return new Wait(entity);
 }
 
 function makeTree(x, y) {
@@ -158,7 +225,7 @@ function makeDirtWall(x, y) {
     return new Entity(new Position(x, y), new Tile('#', '#222222', '#7e5d0f', 1), new Solid(), new Opacity(1), new Name('wall'));
 }
 function makeBoulder(x, y) {
-    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0.5), new Pushable(), new Collider(), new Name('boulder'));
+    return new Entity(new Position(x, y), new Tile('*', '#888888', null, 1), new Opacity(0), new Pushable(), new Collider(), new Name('boulder'));
 }
 function makeDirt(x, y) {
     return new Entity(new Position(x, y), new Tile('.', '#493607', null, 0), new Opacity(0));
@@ -273,10 +340,12 @@ function makeAnt(x, y) {
                         new Accuracy(3),
                         new Noteworthy(),
                         new Actor(detectVisibleArea, moveTowardsPlayer),
+                        new Vision(20),
                         new Memory(),
                         new Collider(),
-                        new WalkTime(3),
-                        new Combatant(1)
+                        new WalkTime(1.5),
+                        new Combatant(1),
+                        new CanPush()
                     );
 }
 
@@ -409,7 +478,7 @@ const KeyCodes = {
 
 
 function closeDoor(level, entity) {
-    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.coordinates)) {
+    for (let cell of level.entitySpacialHash.iterateNeighbours(entity.Position.coordinates, CardinalDirectionVectors)) {
         for (let e of cell) {
             if (e.hasComponent(Door) && e.Door.open) {
                 return new CloseDoor(entity, e);
@@ -537,13 +606,13 @@ async function getPlayerAction(level, entity) {
         var key = await getKey();
         switch (key.keyCode) {
         case KeyCodes.Up:
-            return new Walk(entity, CardinalDirections.North);
+            return new Walk(entity, Directions.North);
         case KeyCodes.Down:
-            return new Walk(entity, CardinalDirections.South);
+            return new Walk(entity, Directions.South);
         case KeyCodes.Left:
-            return new Walk(entity, CardinalDirections.West);
+            return new Walk(entity, Directions.West);
         case KeyCodes.Right:
-            return new Walk(entity, CardinalDirections.East);
+            return new Walk(entity, Directions.East);
         case KeyCodes.Close:
             var action = closeDoor(level, entity);
             if (action != null) {
@@ -642,6 +711,7 @@ function processTimeouts(level) {
 
 $(() => {(async function() {
  
+
     const WIDTH = 74
     const HEIGHT = 30
     

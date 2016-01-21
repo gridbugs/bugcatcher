@@ -1,4 +1,4 @@
-import {Directions, DirectionVectors} from './direction.js';
+import {DirectionVectors} from './direction.js';
 import {tableIterator} from './util.js';
 
 export class Grid {
@@ -55,10 +55,28 @@ export class Grid {
         }
     }
 
-    *iterateNeighbours(coordinate) {
-        for (let [_, vector] of tableIterator(Directions, DirectionVectors)) {
+    *iterateNeighbourCoordinates(coordinate, vectors=DirectionVectors) {
+        for (let vector of vectors) {
             var neighbourCoordinate = coordinate.add(vector);
-            yield this.getCart(neighbourCoordinate);
+            if (this.hasCoordinateCart(neighbourCoordinate)) {
+                yield neighbourCoordinate;
+            }
+        }
+    }
+
+    *iterateNeighbours(coordinate, vectors=DirectionVectors) {
+        for (let vector of this.iterateNeighbourCoordinates(coordinate, vectors)) {
+            yield this.getCart(vector);
+        }
+    }
+
+    *iterateNeighbourPairs(coordinate, directions) {
+        for (let direction of directions) {
+            let vector = DirectionVectors[direction];
+            let neighbourCoordinate = coordinate.add(vector);
+            if (this.hasCoordinateCart(neighbourCoordinate)) {
+                yield [direction, neighbourCoordinate];
+            }
         }
     }
 }
