@@ -49,7 +49,7 @@ export class DescriptionSystem {
         switch (action.type) {
         case ActionType.MeleeAttackHit:
             if (action.attacker.hasComponent(PlayerCharacter)) {
-                this.printMessage(`You attack the ${action.target.Name.value}.`);
+                this.printMessage(`You attack the ${action.target.Name.fullName}.`);
                 let healthRatio = action.target.Health.value / action.target.Health.maxValue;
                 let targetStatus;
                 if (healthRatio < 1 && healthRatio >= 0.75) {
@@ -65,21 +65,30 @@ export class DescriptionSystem {
                 if (healthRatio > 0 && healthRatio < 1) {
                     this.printMessage(`The ${action.target.Name.value} looks ${targetStatus}.`);
                 }
+            } else if (action.target.hasComponent(PlayerCharacter)) {
+                this.printMessage(`The ${action.attacker.Name.fullName} attacks you.`);
             }
             break;
         case ActionType.MeleeAttackDodge:
             if (action.attacker.hasComponent(PlayerCharacter)) {
                 this.printMessage(`The ${action.target.Name.value} dodges your attack.`);
+            } else if (action.target.hasComponent(PlayerCharacter)) {
+                this.printMessage(`You dodge the ${action.attacker.Name.fullName}'s attack`);
             }
             break;
         case ActionType.MeleeAttackBlock:
             if (action.attacker.hasComponent(PlayerCharacter)) {
                 this.printMessage(`The ${action.target.Name.value} blocks your attack.`);
+            } else if (action.target.hasComponent(PlayerCharacter)) {
+                this.printMessage(`You block the ${action.attacker.Name.fullName}'s attack`);
             }
             break;
         case ActionType.Die:
             if (action.attack.attacker.hasComponent(PlayerCharacter)) {
                 this.printMessage(`You kill the ${action.target.Name.value}.`);
+            }
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('You die.');
             }
             break;
         case ActionType.Ascend:

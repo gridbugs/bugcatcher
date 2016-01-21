@@ -77,9 +77,9 @@ export class Level {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
             if (action.direct && relativeTime > 0) {
-                this.hudSystem.run(this.playerCharacter);
                 if (action.entity == this.playerCharacter) {
-                    console.debug(this);
+                    this.hudSystem.run(this.playerCharacter);
+                    this.observationSystem.run(this.playerCharacter);
                     this.rendererSystem.run(this.playerCharacter);
                     await mdelay(relativeTime);
                 }

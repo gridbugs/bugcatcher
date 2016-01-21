@@ -60,13 +60,6 @@ export class Drawer {
         cell.backgroundColour = backgroundColour || this.defaultBackgroundColour;
     }
 
-    drawTile(cell) {
-        this.ctx.beginPath();
-        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.25)';
-        this.ctx.fillRect(cell.x * this.cellWidth + this.xBackgroundPadding, cell.y * this.cellHeight + this.yBackgroundPadding, this.cellWidth, this.cellHeight);
-        this.ctx.fill();
-    }
-
     draw() {
         this.ctx.beginPath();
 
@@ -133,7 +126,6 @@ export class Drawer {
 
     drawWithPathUntilSolid(path, character, pathColour, startColour, endColour,
                                 drawFollowing = false, followingColour = null) {
-    
         var level = character.Position.level;
         var memory = character.Memory;
 
@@ -147,13 +139,8 @@ export class Drawer {
         for (let vec of path.iterateAbsolute()) {
             let cell = level.entitySpacialHash.getCart(vec);
             let memoryCell = memory.value.getCart(level, vec);
-            for (let memoryEntry of memoryCell) {
-                if (memoryEntry.turn != level.turn) {
-                    solid = true;
-                    break;
-                }
-            }
-            if (solid) {
+            if (memoryCell.turn != level.turn) {
+                solid = true;
                 break;
             }
 
@@ -177,13 +164,8 @@ export class Drawer {
                     break;
                 }
                 let memoryCell = memory.value.getCart(level, vec);
-                for (let memoryEntry of memoryCell) {
-                    if (memoryEntry.turn != level.turn) {
-                        solid = true;
-                        break;
-                    }
-                }
-                if (solid) {
+                if (memoryCell.turn != level.turn) {
+                    solid = true;
                     break;
                 }
                 let cell = level.entitySpacialHash.getCart(vec);

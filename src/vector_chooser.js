@@ -26,7 +26,6 @@ export class VectorChooser {
         this.drawUntilSolid = drawUntilSolid;
         
         this.drawer = getDefaultDrawer();
-
         if (this.showPath) {
             if (drawUntilSolid) {
                 this.draw = (start, selection, character) => {

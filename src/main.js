@@ -80,8 +80,8 @@ var surfaceString = [
 '&             #........#........#....................#             &    &', 
 '& &           #.................#....................+                  &', 
 '&             #........#........#..>.................#   &   &        & &', 
-'&     #############.####........#....................#             &    &', 
-'&     #................#......@.....a................#           &      &', 
+'&     #############.####........#......()............#             &    &', 
+'&     #................#......@.....ag...............#           &      &', 
 '&   & #.........................#.***................#                  &', 
 '&     #................#........#...*................#    &     & &     &', 
 '&     #................#........#....................#                  &', 
@@ -186,6 +186,9 @@ function moveTowardsPlayer(level, entity) {
             canEnter
         );
         entity.Actor.lastPlayerPosition = path.end;
+        if (path.directions.length == 0) {
+            return new Wait(entity);
+        }
         return new Walk(entity, path.directions[0]);
     } catch (e) {
         if (e instanceof NoResults) {
@@ -197,7 +200,10 @@ function moveTowardsPlayer(level, entity) {
                         entity.Actor.lastPlayerPosition,
                         canEnter
                     );
-                    console.debug(path);
+                    if (path.directions.length == 0) {
+                        this.lastPlayerPosition = null;
+                        return new Wait(entity);
+                    }
                     return new Walk(entity, path.directions[0]);
                 } catch (e) {
                     if (e instanceof NoResults) {
@@ -318,12 +324,14 @@ function makeGrasshopper(x, y) {
                         new Attack(5),
                         new Dodge(6),
                         new Accuracy(2),
-                        new Noteworthy(),
+                        new Noteworthy()
+                        /*
                         new Actor(blindObserver, getRandomMovement),
                         new Memory(),
                         new Collider(),
                         new WalkTime(3),
                         new Combatant(1)
+                        */
                     );
 }
 function makeAnt(x, y) {
@@ -338,7 +346,8 @@ function makeAnt(x, y) {
                         new Attack(4),
                         new Dodge(2),
                         new Accuracy(3),
-                        new Noteworthy(),
+                        new Noteworthy()
+                        /*
                         new Actor(detectVisibleArea, moveTowardsPlayer),
                         new Vision(20),
                         new Memory(),
@@ -346,6 +355,7 @@ function makeAnt(x, y) {
                         new WalkTime(1.5),
                         new Combatant(1),
                         new CanPush()
+                        */
                     );
 }
 
@@ -688,9 +698,16 @@ function getPlayerCharacter(entities) {
 }
 
 async function gameLoop(playerCharacter) {
+    var level = playerCharacter.Position.level;
     while (true) {
-        await playerCharacter.Position.level.progressSchedule();
+        await level.progressSchedule();
+        if (!playerCharacter.Actor.active) {
+            break;
+        }
     }
+    level.observationSystem.run(playerCharacter);
+    level.rendererSystem.run(playerCharacter);
+    level.hudSystem.run(playerCharacter);
 }
 
 function processEntityTimeouts(entities, level) {

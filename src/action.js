@@ -11,7 +11,8 @@ import {
     Position,
     Cooldown,
     WalkTime,
-    Actor
+    Actor,
+    PlayerCharacter
 } from './component.js';
 
 import {
@@ -302,7 +303,12 @@ export class Die extends Action {
 
     commit() {
         this.entity.removeComponents(Combatant);
-        this.entity.Tile.character = '%';
+        if (!this.entity.hasComponent(PlayerCharacter)) {
+            this.entity.Tile.character = '%';
+        }
+        if (this.entity.hasComponent(Actor)) {
+            this.entity.Actor.disable();
+        }
     }
 }
 Die.type = ActionType.Die;
