@@ -5,8 +5,11 @@ import {Heap} from './heap.js';
 import {getDefaultDrawer} from './drawer.js';
 import {NoResults} from './exception.js';
 import {ObjectPool} from './object_pool.js';
-
+var NodeId = 0;
 class Node {
+    constructor() {
+        this.id = NodeId++;
+    }
     init(coordinates, direction, cost, heuristic = 0) {
         this.coordinates = coordinates;
         this.direction = direction;
@@ -31,6 +34,7 @@ class SearchResult {
         this.vectors = [];
         this.directions = [];
         this.constructArray(end);
+        this.length = this.vectors.length;
     }
 
     constructArray(node) {
@@ -53,6 +57,7 @@ function init(grid) {
         visitedSet = new Grid(grid.width, grid.height);
         seenSet = new Grid(grid.width, grid.height);
     } else {
+        priorityQueue.clear();
         for (let i = 0; i < grid.height; ++i) {
             for (let j = 0; j < grid.width; ++j) {
                 visitedSet.set(j, i, undefined);
@@ -68,6 +73,9 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                     getMoveCost=()=>{return 1}) {
     init(grid);
     var startNode = allocateNode(start, null, 0);
+    if (startNode.parent != null) {
+        throw new Error();
+    }
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -99,6 +107,9 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
 
             var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates));
+            if (node.parent != null) {
+                throw new Error();
+            }
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {
@@ -119,11 +130,11 @@ export function shortestPathThroughGrid(grid, start, end,
                     getMoveCost=()=>{return 1},
                     heuristic=(current, destination) => {return current.getDistance(destination)}) {
 
-    var priorityQueue = new Heap((a, b) => {return a.total - b.total});
-    var visitedSet = new Grid(grid.width, grid.height);
-    var seenSet = new Grid(grid.width, grid.height);
-
+    init(grid);
     var startNode = allocateNode(start, 0, start.getDistance(end));
+    if (startNode.parent != null) {
+        throw new Error();
+    }
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -150,6 +161,9 @@ export function shortestPathThroughGrid(grid, start, end,
             var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates),
                 heuristic(neighbourCoordinates, end));
+            if (node.parent != null) {
+                throw new Error();
+            }
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {

@@ -9,6 +9,7 @@ import * as Component from './component.js';
 export {getPlayerAction};
 
 export function getRandomMovement(level, entity) {
+    return new Action.Wait(entity);
     return new Action.Walk(entity, arrayRandom([Directions.North, Directions.East, Directions.South, Directions.West]));
 }
 export function getWait(level, entity) {
@@ -51,35 +52,47 @@ function containsPlayerCharacter(entities) {
 }
 
 export function moveTowardsPlayer(level, entity) {
+    
+    var playerPosition = entity.Position.level.playerCharacter.Position.coordinates;
     var grid = entity.Memory.value.getSpacialHash(level);
-    let path = shortestPathThroughGridUntilPredicateCardinal(
-        grid,
-        entity.Position.coordinates,
-        containsPlayerCharacter,
-        (entities) => {return canEnter(entity, entities)}
-    );
-    if (path) {
-        entity.Actor.lastPlayerPosition = path.end;
-        if (path.directions.length == 0) {
-            return new Action.Wait(entity);
-        }
-        return new Action.Walk(entity, path.directions[0]);
-    }
+    var start = entity.Position.coordinates;
 
-    if (entity.Actor.lastPlayerPosition != null) {
-        let path = shortestPathThroughGridCardinal(
+    if (entity.canSee(playerPosition)) {
+        entity.Memory.lastSeenPlayerPosition = playerPosition;
+        
+        var path = shortestPathThroughGridCardinal(
             grid,
-            entity.Position.coordinates,
-            entity.Actor.lastPlayerPosition,
-            (entities) => {return canEnter(entity, entities)}
+            start,
+            playerPosition,
+            (entities, vector) => {
+                return canEnter(entity, entities) && entity.hasSeen(vector);
+            }
         );
-        if (path) {
-            if (path.directions.length == 0) {
-                this.lastPlayerPosition = null;
+
+        if (path != null) {
+            if (path.length == 0) {
                 return new Action.Wait(entity);
             }
             return new Action.Walk(entity, path.directions[0]);
         }
     }
+    if (entity.Memory.lastSeenPlayerPosition) {
+        var path = shortestPathThroughGridCardinal(
+            grid,
+            start,
+            entity.Memory.lastSeenPlayerPosition,
+            (entities, vector) => {
+                return canEnter(entity, entities) && entity.hasSeen(vector);
+            }
+        );
+
+        if (path != null) {
+            if (path.length == 0) {
+                return new Action.Wait(entity);
+            }
+            return new Action.Walk(entity, path.directions[0]);
+        }
+    }
+
     return getRandomMovement(level, entity);
 }

@@ -65,7 +65,8 @@ export class LightEntity {
     }
 
     hasComponents(...components) {
-        for (let component of components) {
+        for (let i = 0; i < components.length; ++i) {
+            let component = components[i];
             if (!this.hasComponent(component)) {
                 return false;
             }
@@ -91,6 +92,12 @@ export class LightEntity {
         var level = this.Position.level;
         var memoryCell = this.Memory.value.getCart(level, vector);
         return memoryCell.turn == this.Memory.turn;
+    }
+
+    hasSeen(vector) {
+        var level = this.Position.level;
+        var memoryCell = this.Memory.value.getCart(level, vector);
+        return memoryCell.turn != -1;
     }
 
     become(components) {

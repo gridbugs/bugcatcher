@@ -60,7 +60,7 @@ export class ObservationSystem {
     }
 
     run(entity) {
-        if (entity.hasComponents(Vision, Memory)) {
+        if (entity.hasComponent(Vision) && entity.hasComponent(Memory)) {
             entity.Memory.turn = this.level.turn;
             let visionDistance = entity.Vision.distance;
             let eyePosition = entity.Position.coordinates;

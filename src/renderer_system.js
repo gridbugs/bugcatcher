@@ -31,7 +31,7 @@ export class RendererSystem {
         for (let memoryCell of memory.value.iterateCells(this.level)) {
             let lastSeenTime = memoryCell.turn;
             for (let entity of memoryCell) {
-                if (entity.hasComponents(Position, Tile)) {
+                if (entity.hasComponent(Position) && entity.hasComponent(Tile)) {
                     let vec = entity.Position.coordinates;
                     let entry = this.grid.getCart(vec);
 

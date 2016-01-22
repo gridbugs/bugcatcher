@@ -116,6 +116,7 @@ Level.prototype.applyAction = function(action) {
         this.observationSystem.update(action);
 
         this.descriptionSystem.run(this.playerCharacter, action);
+        this.rendererSystem.run(this.playerCharacter);
 
         return true;
     }

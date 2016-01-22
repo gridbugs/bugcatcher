@@ -52,6 +52,13 @@ export class Drawer {
         ++this.seq;
     }
 
+    drawTile(cell, colour = 'rgba(255, 0, 0, 0.25') {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = colour;
+        this.ctx.fillRect(cell.x * this.cellWidth + this.xBackgroundPadding + this.xPadding, cell.y * this.cellHeight + this.yBackgroundPadding + this.yPadding, this.cellWidth, this.cellHeight);
+        this.ctx.fill();
+    }
+
     setTile(x, y, character, colour, backgroundColour) {
         let cell = this.grid.get(x, y);
         cell.seq = this.seq;

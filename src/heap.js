@@ -7,20 +7,16 @@ export class Heap {
         this.nextIndex = 1;
     }
 
-    isEmpty() {
+    get empty() {
         return this.nextIndex == 1;
     }
 
-    get empty() {
-        return this.isEmpty();
-    }
-
-    getLength() {
+    get length() {
         return this.nextIndex - 1;
     }
 
-    get length() {
-        return this.getLength();
+    clear() {
+        this.nextIndex = 1;
     }
 
     insert(x) {
@@ -41,14 +37,14 @@ export class Heap {
     }
 
     peek() {
-        if (this.isEmpty()) {
+        if (this.empty) {
             throw new Error("Heap is empty");
         }
         return this.array[1];
     }
 
     pop() {
-        if (this.isEmpty()) {
+        if (this.empty) {
             throw new Error("Heap is empty");
         }
         var ret = this.array[1];
@@ -86,7 +82,7 @@ export class Heap {
         return ret;
     }
 
-    *iterate() {
+    *[Symbol.iterator]() {
         for (let i = 1; i != this.nextIndex; ++i) {
             yield this.array[i];
         }
