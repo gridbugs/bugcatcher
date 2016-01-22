@@ -73,9 +73,6 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                     getMoveCost=()=>{return 1}) {
     init(grid);
     var startNode = allocateNode(start, null, 0);
-    if (startNode.parent != null) {
-        throw new Error();
-    }
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -107,9 +104,6 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
 
             var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates));
-            if (node.parent != null) {
-                throw new Error();
-            }
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {
@@ -132,9 +126,6 @@ export function shortestPathThroughGrid(grid, start, end,
 
     init(grid);
     var startNode = allocateNode(start, 0, start.getDistance(end));
-    if (startNode.parent != null) {
-        throw new Error();
-    }
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -161,9 +152,6 @@ export function shortestPathThroughGrid(grid, start, end,
             var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates),
                 heuristic(neighbourCoordinates, end));
-            if (node.parent != null) {
-                throw new Error();
-            }
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {
