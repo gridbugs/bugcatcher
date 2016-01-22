@@ -25,10 +25,7 @@ export class IdMap {
     }
     *keys() {
         for (let i of this.arrayKeys) {
-            let key = this.table[i];
-            if (key != undefined) {
-                yield key;
-            }
+            yield this.table[i];
         }
     }
     *entries() {
@@ -50,6 +47,10 @@ export class IdMap {
         return this.array[obj.id];
     }
     set(obj, value) {
+        if (obj.id == undefined) {
+            console.debug(obj);
+            throw new Error();
+        }
         this.array[obj.id] = value;
         this.arrayKeys.add(obj.id);
     }

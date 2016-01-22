@@ -3,7 +3,7 @@ import {mdelay} from './time.js';
 import {Schedule} from './schedule.js';
 
 import {SpacialHash} from './spacial_hash.js';
-import {EntitySet} from './entity_set.js';
+import {EntitySet, ComponentCountingEntitySet} from './entity_set.js';
 
 import {RendererSystem} from './renderer_system.js';
 import {HudSystem} from './hud_system.js';
@@ -22,12 +22,16 @@ import {
 } from './component.js';
 
 export class Level {
-    constructor(width, height, entities) {
+    constructor(width, height, entities, p) {
 
         this.id = Level.nextId++;
 
-        this.entities = new EntitySet().initialize(entities);
-        this.entitySpacialHash = new SpacialHash(width, height, EntitySet).initialize(entities);
+        this.entities = new EntitySet(entities);
+        this.entitySpacialHash = new SpacialHash(width, height, ComponentCountingEntitySet);
+        if (p) {
+            this.entitySpacialHash.get(53, 9).print = true;
+        }
+        this.entitySpacialHash.initialize(entities);
 
         this.width = width;
         this.height = height;
@@ -106,10 +110,10 @@ Level.prototype.applyAction = function(action) {
     this.combatSystem.check(action);
     this.pushSystem.check(action);
     this.equipmentSystem.check(action);
-    this.observationSystem.check(action);
 
     if (action.success) {
         action.commit(this);
+        this.observationSystem.update(action);
 
         this.descriptionSystem.run(this.playerCharacter, action);
 

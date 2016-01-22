@@ -9,6 +9,7 @@ export class Grid {
         for (let i = 0; i < this.height; ++i) {
             this.array[i] = new Array(this.width);
         }
+        this.tmpArray = [0, 0];
     }
 
     get(x, y) {
@@ -75,7 +76,9 @@ export class Grid {
             let vector = DirectionVectors[direction];
             let neighbourCoordinate = coordinate.add(vector);
             if (this.hasCoordinateCart(neighbourCoordinate)) {
-                yield [direction, neighbourCoordinate];
+                this.tmpArray[0] = direction;
+                this.tmpArray[1] = neighbourCoordinate;
+                yield this.tmpArray;
             }
         }
     }

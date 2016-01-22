@@ -202,7 +202,7 @@ $(() => {(async function() {
  
     initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
-    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(surfaceString));
+    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(surfaceString), true);
     dungeonLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(dungeonString));
 
     (() => {
@@ -238,6 +238,7 @@ $(() => {(async function() {
 
         surfaceLevel.setPlayerCharacter(playerCharacter);
         dungeonLevel.setPlayerCharacter(playerCharacter);
+
 
         for (let level of [surfaceLevel, dungeonLevel]) {
             level.registerPeriodicFunction(processTimeouts, 1);

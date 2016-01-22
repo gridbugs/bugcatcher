@@ -22,6 +22,15 @@ export class DoorSystem {
                 }
             }
             break;
+        case ActionType.CloseDoor:
+            let toCell = this.level.entitySpacialHash.getCart(action.door.Position.coordinates);
+            for (let e of toCell) {
+                if (e.hasComponent(Collider)) {
+                    action.fail();
+                    break;
+                }
+            }
+            break;
         }
     }
 }

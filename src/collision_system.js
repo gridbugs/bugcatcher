@@ -12,11 +12,9 @@ export class CollisionSystem {
         case ActionType.JumpPart:
             if (action.entity.hasComponent(Collider)) {
                 let toCell = this.level.entitySpacialHash.getCart(action.destination);
-                for (let e of toCell) {
-                    if (e.hasComponent(Solid)) {
-                        action.fail();
-                        break;
-                    }
+                if (toCell.hasComponent(Solid)) {
+                    action.fail();
+                    break;
                 }
             }
         }

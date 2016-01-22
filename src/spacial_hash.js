@@ -12,12 +12,10 @@ export class SpacialHash extends Grid {
         }
     }
 
-    initialize(entities, predicate = (e) => {return true;}, f = (e) => {return e;}) {
+    initialize(entities) {
         for (let entity of entities) {
-            if (predicate(entity)) {
-                let vec = entity.Position.coordinates;
-                this.getCart(vec).set(entity, f(entity));
-            }
+            let vec = entity.Position.coordinates;
+            this.getCart(vec).add(entity);
         }
         return this;
     }

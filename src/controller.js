@@ -30,62 +30,56 @@ function shortestPathThroughGridCardinal(grid, start, end, canEnterPredicate) {
                                 });
 }
 
-export function moveTowardsPlayer(level, entity) {
-    var grid = entity.Memory.value.getSpacialHash(level);
-    var canEnter = (entities) => {
+function canEnter(entity, entities) {
+    if (!entity.hasComponent(Component.CanPush) && entities.hasComponent(Component.Pushable)) {
+        return false;
+    }
+    if (entity.hasComponent(Component.Combatant)) {
         for (let e of entities) {
-            if (e.hasComponent(Component.Solid)) {
-                return false;
+            if (e.hasComponent(Component.Combatant)) {
+                if (e.Combatant.value == entity.Combatant.value) {
+                    return false;
+                }
             }
         }
-        return true;
-    };
-    try {
-        let path = shortestPathThroughGridUntilPredicateCardinal(
-            grid,
-            entity.Position.coordinates,
-            (entities) => {
-                for (let e of entities) {
-                    if (e.hasComponent(Component.PlayerCharacter)) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            canEnter
-        );
+    }
+    return !entities.hasComponent(Component.Solid);
+}
+
+function containsPlayerCharacter(entities) {
+    return entities.hasComponent(Component.PlayerCharacter);
+}
+
+export function moveTowardsPlayer(level, entity) {
+    var grid = entity.Memory.value.getSpacialHash(level);
+    let path = shortestPathThroughGridUntilPredicateCardinal(
+        grid,
+        entity.Position.coordinates,
+        containsPlayerCharacter,
+        (entities) => {return canEnter(entity, entities)}
+    );
+    if (path) {
         entity.Actor.lastPlayerPosition = path.end;
         if (path.directions.length == 0) {
             return new Action.Wait(entity);
         }
         return new Action.Walk(entity, path.directions[0]);
-    } catch (e) {
-        if (e instanceof NoResults) {
-            if (entity.Actor.lastPlayerPosition != null) {
-                try {
-                    let path = shortestPathThroughGridCardinal(
-                        grid,
-                        entity.Position.coordinates,
-                        entity.Actor.lastPlayerPosition,
-                        canEnter
-                    );
-                    if (path != null && path.directions.length == 0) {
-                        this.lastPlayerPosition = null;
-                        return new Action.Wait(entity);
-                    }
-                    return new Action.Walk(entity, path.directions[0]);
-                } catch (e) {
-                    if (e instanceof NoResults) {
-                        return getRandomMovement(level, entity);
-                    } else {
-                        throw e;
-                    }
-                }
-            }
-        } else {
-            throw e;
-        }
     }
 
-    return new Action.Wait(entity);
+    if (entity.Actor.lastPlayerPosition != null) {
+        let path = shortestPathThroughGridCardinal(
+            grid,
+            entity.Position.coordinates,
+            entity.Actor.lastPlayerPosition,
+            (entities) => {return canEnter(entity, entities)}
+        );
+        if (path) {
+            if (path.directions.length == 0) {
+                this.lastPlayerPosition = null;
+                return new Action.Wait(entity);
+            }
+            return new Action.Walk(entity, path.directions[0]);
+        }
+    }
+    return getRandomMovement(level, entity);
 }

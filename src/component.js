@@ -92,7 +92,7 @@ export class Position extends Component {
     }
 
     afterAdd() {
-        if (this.level != null) {
+        if (this.level != null && this.entity.id != undefined) {
             this.addToSpacialHash();
         }
     }

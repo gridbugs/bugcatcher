@@ -13,6 +13,12 @@ export class LightEntity {
         this.components[component.type] = component;
         this[ComponentNames[component.type]] = component;
         component.entity = this;
+
+        if (this.constructor == Entity && this.Position && this.Position.level) {
+            this.Position.level.entitySpacialHash.getCart(this.Position.coordinates)
+                .onAddComponent(this, component);
+        }
+
         component.afterAdd();
     }
 
@@ -33,6 +39,12 @@ export class LightEntity {
     removeComponent(componentClass) {
         let component = this.components[componentClass.type];
         component.beforeRemove();
+
+        if (this.constructor == Entity && this.Position && this.Position.level) {
+            this.Position.level.entitySpacialHash.getCart(this.Position.coordinates)
+                .onRemoveComponent(this, componentClass);
+        }
+
         delete this.components[componentClass.type];
         delete this[ComponentNames[componentClass.type]];
         component.entity = null;

@@ -4,15 +4,24 @@ import {Grid} from './grid.js';
 import {Heap} from './heap.js';
 import {getDefaultDrawer} from './drawer.js';
 import {NoResults} from './exception.js';
+import {ObjectPool} from './object_pool.js';
 
 class Node {
-    constructor(coordinates, direction, cost, heuristic = 0) {
+    init(coordinates, direction, cost, heuristic = 0) {
         this.coordinates = coordinates;
         this.direction = direction;
         this.cost = cost;
         this.total = cost + heuristic;
         this.parent = null;
+        return this;
     }
+}
+
+var NodePool = new ObjectPool(Node);
+
+function allocateNode(coordinates, direction, cost, heuristic = 0) {
+    var node = NodePool.allocate();
+    return node.init(coordinates, direction, cost, heuristic = 0);
 }
 
 class SearchResult {
@@ -35,16 +44,30 @@ class SearchResult {
     }
 }
 
+var priorityQueue, visitedSet, seenSet;
+
+function init(grid) {
+    NodePool.flush();
+    if (priorityQueue == undefined) {
+        priorityQueue = new Heap((a, b) => {return a.total - b.total});
+        visitedSet = new Grid(grid.width, grid.height);
+        seenSet = new Grid(grid.width, grid.height);
+    } else {
+        for (let i = 0; i < grid.height; ++i) {
+            for (let j = 0; j < grid.width; ++j) {
+                visitedSet.set(j, i, undefined);
+                seenSet.set(j, i, undefined);
+            }
+        }
+    }
+}
+
 export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                     enterPredicate=()=>{return true},
                     directions,
                     getMoveCost=()=>{return 1}) {
-
-    var priorityQueue = new Heap((a, b) => {return a.total - b.total});
-    var visitedSet = new Grid(grid.width, grid.height);
-    var seenSet = new Grid(grid.width, grid.height);
-
-    var startNode = new Node(start, null, 0);
+    init(grid);
+    var startNode = allocateNode(start, null, 0);
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -61,14 +84,20 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
             return new SearchResult(currentNode);
         }
 
-        for (var [direction, neighbourCoordinates] of
-                grid.iterateNeighbourPairs(currentNode.coordinates, directions)) {
+        for (let i = 0; i < directions.length; ++i) {
+            let direction = directions[i];
+            let neighbourCoordinates = currentNode.coordinates.add(DirectionVectors[direction]);
+
+            if (!grid.hasCoordinateCart(neighbourCoordinates)) {
+                continue;
+            }
+
             var cell = grid.getCart(neighbourCoordinates);
             if (!enterPredicate(cell, neighbourCoordinates)) {
                 continue;
             }
 
-            var node = new Node(neighbourCoordinates, direction,
+            var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates));
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
@@ -82,7 +111,6 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
 
         visitedSet.setCart(currentNode.coordinates, true);
     }
-    throw new NoResults();
 }
 
 export function shortestPathThroughGrid(grid, start, end,
@@ -95,7 +123,7 @@ export function shortestPathThroughGrid(grid, start, end,
     var visitedSet = new Grid(grid.width, grid.height);
     var seenSet = new Grid(grid.width, grid.height);
 
-    var startNode = new Node(start, 0, start.getDistance(end));
+    var startNode = allocateNode(start, 0, start.getDistance(end));
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -119,7 +147,7 @@ export function shortestPathThroughGrid(grid, start, end,
                 continue;
             }
 
-            var node = new Node(neighbourCoordinates, direction,
+            var node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates),
                 heuristic(neighbourCoordinates, end));
 

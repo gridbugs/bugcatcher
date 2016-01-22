@@ -57,21 +57,9 @@ export class ObservationSystem {
             cell.update(entities);
             this.grid.set(j, i, cell);
         }
-        this.dirty = true;
-    }
-
-    updateAll() {
-        if (this.dirty) {
-            for (let observationCell of this.grid) {
-                let entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
-                observationCell.update(entities);
-            }
-            this.dirty = false;
-        }
     }
 
     run(entity) {
-        this.updateAll();
         if (entity.hasComponents(Vision, Memory)) {
             entity.Memory.turn = this.level.turn;
             let visionDistance = entity.Vision.distance;
@@ -88,16 +76,26 @@ export class ObservationSystem {
         }
     }
 
-    check(action) {
+    update(action) {
+        var observationCell, entities;
+
         switch (action.type) {
         case ActionType.OpenDoor:
         case ActionType.CloseDoor:
-            this.dirty = true;
+            observationCell = this.grid.getCart(action.door.Position.coordinates);
+            entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
+            observationCell.update(entities);
             break;
         case ActionType.Push:
         case ActionType.Move:
             if (action.entity.hasComponent(Opacity) && action.entity.Opacity != 0) {
-                this.dirty = true;
+                observationCell = this.grid.getCart(action.source);
+                entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
+                observationCell.update(entities);
+                
+                observationCell = this.grid.getCart(action.destination);
+                entities = this.level.entitySpacialHash.getCart(observationCell.coordinates);
+                observationCell.update(entities);
             }
             break;
         }

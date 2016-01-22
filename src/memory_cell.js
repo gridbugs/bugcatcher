@@ -1,8 +1,9 @@
 import {LightEntity} from './entity.js';
-import {ComponentType} from './component_type.js';
+import {ComponentType} from './component_type.js'
+import {ComponentCountingEntitySet} from './entity_set.js';
+import {ObjectPool} from './object_pool.js';
 
-function makeMemoryEntity(entity) {
-    var ret = new LightEntity();
+function makeMemoryEntity(entity, ret) {
 
     if (entity.hasComponentType(ComponentType.Position)) {
         ret.addComponent(entity.Position.clone());
@@ -19,24 +20,17 @@ function makeMemoryEntity(entity) {
     if (entity.hasComponentType(ComponentType.Solid)) {
         ret.addComponent(entity.Solid.clone());
     }
+
     return ret;
 }
 
-export class MemoryCell {
+export class MemoryCell extends ComponentCountingEntitySet {
     constructor() {
-        this.entities = new Set();
+        super();
         this.turn = -1;
     }
 
-    clear() {
-        this.entities.clear();
-    }
-
     see(entity) {
-        this.entities.add(makeMemoryEntity(entity));
-    }
-
-    *[Symbol.iterator]() {
-        yield* this.entities;
+        this.add(makeMemoryEntity(entity, new LightEntity()));
     }
 }
