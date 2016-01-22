@@ -325,13 +325,10 @@ export class Timeout extends Component {
     progress(level) {
         --this.remainingTime;
         if (this.remainingTime == 0) {
-            level.scheduleImmediateAction(new ActionPair(
-                new CallFunction(
-                    () => {this.fn(this.entity)},
-                    this.entity,
-                    this.description
-                ),
-                new RemoveComponent(this.entity, this)
+            level.scheduleImmediateAction(new CallFunction(
+                () => {this.fn(this.entity, level)},
+                this.entity,
+                this.description
             ));
         }
     }

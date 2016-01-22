@@ -1,5 +1,5 @@
 import {getKey, getChar} from './input.js';
-import {Directions} from './direction.js';
+import {Directions, CardinalDirectionVectors} from './direction.js';
 import * as Action from './action.js';
 import * as Component from './component.js';
 

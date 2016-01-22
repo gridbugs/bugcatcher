@@ -1,4 +1,4 @@
-import {ComponentNames} from './component_type.js';
+import {ComponentType, ComponentNames} from './component_type.js';
 import {IdMap} from './id_map.js';
 
 export class LightEntity {
@@ -79,6 +79,39 @@ export class LightEntity {
         var level = this.Position.level;
         var memoryCell = this.Memory.value.getCart(level, vector);
         return memoryCell.turn == this.Memory.turn;
+    }
+
+    become(components) {
+        for (let c of this.iterateComponents()) {
+            if (c.type == ComponentType.Position ||
+                c.type == ComponentType.Actor) {
+                continue;
+            }
+            this.removeComponent(c.constructor);
+        }
+        for (let c of components) {
+            if (c.type == ComponentType.Position) {
+                this.Position.coordinates = c.coordinates;
+                this.Position.level = c.level;
+            } else if (c.type == ComponentType.Actor) {
+                this.Actor.getAction = c.getAction;
+                this.Actor.observe = c.observe;
+            } else {
+                this.addComponent(c);
+            }
+        }
+    }
+
+    get x() {
+        if (this.components[ComponentType.Position] != undefined) {
+            return this.Position.coordinates.x;
+        }
+    }
+
+    get y() {
+        if (this.components[ComponentType.Position] != undefined) {
+            return this.Position.coordinates.y;
+        }
     }
 }
 

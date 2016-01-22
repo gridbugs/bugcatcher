@@ -305,6 +305,7 @@ export class Die extends Action {
         this.entity.removeComponents(Combatant);
         if (!this.entity.hasComponent(PlayerCharacter)) {
             this.entity.Tile.character = '%';
+            this.entity.Tile.zIndex = 1;
         }
         if (this.entity.hasComponent(Actor)) {
             this.entity.Actor.disable();
