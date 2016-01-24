@@ -29,21 +29,15 @@ export class RendererSystem {
         ++this.seq;
         
         for (let memoryCell of memory.value.iterateCells(this.level)) {
-            let lastSeenTime = memoryCell.turn;
-            for (let entity of memoryCell) {
-                if (entity.hasComponent(Position) && entity.hasComponent(Tile)) {
-                    let vec = entity.Position.coordinates;
-                    let entry = this.grid.getCart(vec);
-
-                    if (entry.seq != this.seq || entry.entity == null ||
-                        entry.entity.Tile.zIndex < entity.Tile.zIndex) {
-
-                        entry.entity = entity;
-                        entry.seq = this.seq;
-                        entry.current = lastSeenTime == this.level.turn;
-                    }
-                }
+            if (!memoryCell.known) {
+                continue;
             }
+            let lastSeenTime = memoryCell.turn;
+            let entity = memoryCell.getTopEntity();
+            let entry = this.grid.getCart(memoryCell);
+            entry.entity = entity;
+            entry.seq = this.seq;
+            entry.current = lastSeenTime == this.level.turn;
         }
 
         this.drawer.begin();

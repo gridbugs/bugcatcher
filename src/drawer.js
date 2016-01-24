@@ -1,5 +1,6 @@
 import {Grid} from './grid.js';
 import {Solid} from './component.js';
+import {TextCache} from './text_cache.js'
 
 class DrawerCell {
     constructor(x, y) {
@@ -18,10 +19,9 @@ export class Drawer {
         this.ctx = this.canvas.getContext('2d');
         this.fontSize = 16;
         this.xPadding = 0;
-        this.yPadding = 20;
-        this.xBackgroundPadding = 0;
-        this.yBackgroundPadding = -12;
-        this.ctx.font = `${this.fontSize}px Monospace`;
+        this.yPadding = 4;
+        this.font =`${this.fontSize}px Monospace`;
+        this.ctx.font = this.font;
         this.cellWidth = this.ctx.measureText('@').width;
         this.cellHeight = this.fontSize;
         this.numCols = numCols;
@@ -38,14 +38,22 @@ export class Drawer {
         this.defaultColour = "white";
         this.transparentColour = "rgb(0, 0, 0, 0)";
         this.defaultUiColour = "yellow";
+        this.textCache = new TextCache(
+            this.ctx,
+            this.font,
+            this.cellWidth,
+            this.cellHeight,
+            0,
+            13
+        );
     }
 
     transformBackgroundX(x) {
-        return x * this.cellWidth + this.xPadding + this.xBackgroundPadding;
+        return x * this.cellWidth + this.xPadding;
     }
     
     transformBackgroundY(y) {
-        return y * this.cellHeight + this.yPadding + this.yBackgroundPadding;
+        return y * this.cellHeight + this.yPadding;
     }
 
     begin() {
@@ -55,7 +63,7 @@ export class Drawer {
     drawTile(cell, colour = 'rgba(255, 0, 0, 0.25') {
         this.ctx.beginPath();
         this.ctx.fillStyle = colour;
-        this.ctx.fillRect(cell.x * this.cellWidth + this.xBackgroundPadding + this.xPadding, cell.y * this.cellHeight + this.yBackgroundPadding + this.yPadding, this.cellWidth, this.cellHeight);
+        this.ctx.fillRect(cell.x * this.cellWidth + this.xPadding, cell.y * this.cellHeight + this.yPadding, this.cellWidth, this.cellHeight);
         this.ctx.fill();
     }
 
@@ -77,11 +85,7 @@ export class Drawer {
         // draw each cell
         for (let cell of this.grid) {
             if (cell.seq == this.seq) {
-                this.ctx.fillStyle = cell.backgroundColour;
-                this.ctx.fillRect(cell.x + this.xBackgroundPadding, cell.y + this.yBackgroundPadding,
-                    this.cellWidth, this.cellHeight);
-                this.ctx.fillStyle = cell.colour;
-                this.ctx.fillText(cell.character, cell.x, cell.y);
+                this.textCache.drawText(cell.character, cell.x, cell.y, cell.colour, cell.backgroundColour);
             }
         }
         
@@ -100,7 +104,7 @@ export class Drawer {
         for (let cell of this.grid) {
             if (cell.seq == this.seq) {
                 this.ctx.fillStyle = cell.backgroundColour;
-                this.ctx.fillRect(cell.x + this.xBackgroundPadding, cell.y + this.yBackgroundPadding,
+                this.ctx.fillRect(cell.x, cell.y,
                     this.cellWidth, this.cellHeight);
             }
         }
@@ -110,7 +114,7 @@ export class Drawer {
         for (let cell of this.grid) {
             if (cell.seq == this.seq) {
                 this.ctx.fillStyle = cell.colour;
-                this.ctx.fillText(cell.character, cell.x, cell.y);
+                this.ctx.fillText(cell.character, cell.x, cell.y + 13);
             }
         }
     }

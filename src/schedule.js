@@ -50,10 +50,10 @@ export class Schedule {
 }
 Schedule.compare = (a, b) => {
     if (a.immediate != b.immediate) {
-        return b.immediate - a.immediate;
+        return a.immediate - b.immediate;
     }
     if (a.absoluteTime != b.absoluteTime) {
-        return a.absoluteTime - b.absoluteTime;
+        return b.absoluteTime - a.absoluteTime;
     }
-    return a.sequenceNumber - b.sequenceNumber;
+    return b.sequenceNumber - a.sequenceNumber;
 };

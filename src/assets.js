@@ -33,7 +33,8 @@ import {
 
 import {
     detectVisibleArea,
-    blindObserver
+    blindObserver,
+    omniscientObserver
 } from './observer.js';
 
 import {
@@ -241,7 +242,7 @@ export function grasshopper(x, y, level) {
 }
 
 export function playerCharacter(x, y, level) {
-    return character(x, y, level, 10, 4, 4, 4, 4, 20, detectVisibleArea, getPlayerAction).concat([
+    return character(x, y, level, 10, 4, 4, 4, 4, 20, omniscientObserver, getPlayerAction).concat([
         new Tile('@', 'white', null, 4),
         new Inventory(8),
         new WalkTime(1),

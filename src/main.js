@@ -5,6 +5,9 @@ import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
 import * as Assets from './assets.js';
 import * as Config from './config.js';
 import {UpStairs, DownStairs, Position, Actor, PlayerCharacter, Timeout, Inventory} from './component.js';
+import * as Components from './component.js';
+import {loadComponents} from './component_loader.js';
+loadComponents(Components);
 
 import {Level} from './level.js';
 
@@ -21,11 +24,11 @@ var surfaceString = [
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
 '& &           #.................#........@...........+                  &', 
-'&             #........#........#..>.....g...........#   &   &        & &', 
+'&             #........#........#..>......().........#   &   &        & &', 
 '&     #############.####........#....................#             &    &', 
 '&     #................#.............................#           &      &', 
 '&   & #.........................#.*.*................#                  &', 
-'&     #................#........#...a*...............#    &     & &     &', 
+'&     #................#........#....*...............#    &     & &     &', 
 '&     #................#........#..*.................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
 '&     #................#........#....................#      &         & &', 
@@ -93,15 +96,12 @@ function initWorld(str) {
             switch (ch) {
             case '&':
                 entities.push(make(Assets.tree(j, i)));
-                entities.push(make(Assets.grass(j, i)));
                 break;
             case '#':
                 entities.push(make(Assets.wall(j, i)));
-                entities.push(make(Assets.floor(j, i)));
                 break;
             case '+':
                 entities.push(make(Assets.door(j, i)));
-                entities.push(make(Assets.floor(j, i)));
                 break;
             case '.':
                 entities.push(make(Assets.floor(j, i)));
@@ -141,7 +141,6 @@ function initWorld(str) {
                 entities.push(make(Assets.ant(j, i)));
                 break;
             case '%':
-                entities.push(make(Assets.dirt(j, i)));
                 entities.push(make(Assets.dirtWall(j, i)));
                 break;
             case '>':

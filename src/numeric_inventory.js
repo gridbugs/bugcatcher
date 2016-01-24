@@ -4,7 +4,7 @@ import {InventoryFull, InventorySlotEmpty, NoSuchInventorySlot} from './exceptio
 export class NumericInventory {
     constructor(numSlots) {
         this.numSlots = numSlots;
-        this.slotAllocator = new Heap((a, b) => {return a - b;});
+        this.slotAllocator = new Heap((a, b) => {return b - a;});
         for (let i = 1; i <= this.numSlots; ++i) {
             this.slotAllocator.insert(i);
         }

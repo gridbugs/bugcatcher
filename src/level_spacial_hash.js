@@ -31,8 +31,10 @@ export class LevelSpacialHash {
     *iterateCells(level) {
         let spacialHash = this.levelMap.get(level);
         if (spacialHash != null) {
-            for (let entitySet of spacialHash) {
-                yield entitySet;
+            for (let i = 0; i < spacialHash.height; ++i) {
+                for (let j = 0; j < spacialHash.width; ++j) {
+                    yield spacialHash.array[i][j];
+                }
             }
         }
     }

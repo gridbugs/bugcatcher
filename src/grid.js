@@ -41,9 +41,9 @@ export class Grid {
     }
 
     *[Symbol.iterator]() {
-        for (let row of this.array) {
-            for (let x of row) {
-                yield x;
+        for (let i = 0; i < this.height; ++i) {
+            for (let j = 0; j < this.width; ++j) {
+                yield this.array[i][j];
             }
         }
     }

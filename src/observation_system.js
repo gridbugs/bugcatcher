@@ -43,8 +43,6 @@ class ObservationCell {
 
 }
 
-
-
 export class ObservationSystem {
     constructor(level, numCols, numRows) {
         this.level = level;

@@ -75,7 +75,7 @@ export class ComponentCountingEntitySet extends EntitySet {
     }
 
     clear() {
-        this.componentCount = [];
+        this.componentCount.length = 0;
         super.clear();
     }
 }

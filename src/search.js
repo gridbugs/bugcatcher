@@ -53,7 +53,7 @@ var priorityQueue, visitedSet, seenSet;
 function init(grid) {
     NodePool.flush();
     if (priorityQueue == undefined) {
-        priorityQueue = new Heap((a, b) => {return a.total - b.total});
+        priorityQueue = new Heap((a, b) => {return b.total - a.total});
         visitedSet = new Grid(grid.width, grid.height);
         seenSet = new Grid(grid.width, grid.height);
     } else {

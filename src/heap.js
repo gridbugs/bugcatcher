@@ -27,7 +27,7 @@ export class Heap {
 
         while (index != 1) {
             let parentIndex = index >> 1;
-            if (this.compare(this.array[parentIndex], this.array[index]) < 0) {
+            if (this.compare(this.array[parentIndex], this.array[index]) > 0) {
                 break;
             } else {
                 arraySwap(this.array, index, parentIndex);
@@ -61,18 +61,18 @@ export class Heap {
             let nextIndex;
 
             if (leftChildIndex < maxIndex) {
-                if (this.compare(this.array[leftChildIndex], this.array[rightChildIndex]) < 0) {
+                if (this.compare(this.array[leftChildIndex], this.array[rightChildIndex]) > 0) {
                     nextIndex = leftChildIndex;
                 } else {
                     nextIndex = rightChildIndex;
                 }
 
-                if (this.compare(this.array[nextIndex], this.array[index]) < 0) {
+                if (this.compare(this.array[nextIndex], this.array[index]) > 0) {
                     arraySwap(this.array, index, nextIndex);
                     index = nextIndex;
                     continue;
                 }
-            } else if (leftChildIndex == maxIndex && this.compare(this.array[leftChildIndex], this.array[index]) < 0) {
+            } else if (leftChildIndex == maxIndex && this.compare(this.array[leftChildIndex], this.array[index]) > 0) {
                 arraySwap(this.array, index, leftChildIndex);
             }
 
