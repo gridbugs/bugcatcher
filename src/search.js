@@ -5,6 +5,8 @@ import {Heap} from './heap.js';
 import {getDefaultDrawer} from './drawer.js';
 import {NoResults} from './exception.js';
 import {ObjectPool} from './object_pool.js';
+import {WIDTH, HEIGHT} from './config.js';
+
 class Node {
     init(coordinates, direction, cost, heuristic = 0) {
         this.coordinates = coordinates;
@@ -15,9 +17,6 @@ class Node {
         return this;
     }
 }
-import {WIDTH, HEIGHT} from './config.js';
-
-var NodePool = new ObjectPool(Node);
 
 class SearchResult {
     constructor(end) {
@@ -43,30 +42,37 @@ class SearchResult {
 var priorityQueue = new Heap((a, b) => {return b.total - a.total});
 var visitedSet = new Grid(WIDTH, HEIGHT);
 var seenSet = new Grid(WIDTH, HEIGHT);
+var nodePool = new ObjectPool(Node);
 
-function init(grid) {
-    NodePool.flush();
+function initSharedData(grid) {
+    nodePool.flush();
     priorityQueue.clear();
-    for (let i = 0; i < grid.height; ++i) {
-        for (let j = 0; j < grid.width; ++j) {
+    for (let i = 0; i < HEIGHT; ++i) {
+        for (let j = 0; j < WIDTH; ++j) {
             visitedSet.set(j, i, undefined);
             seenSet.set(j, i, undefined);
         }
     }
 }
 
+function allocateNode(coordinates, direction, cost, heuristic = 0) {
+    return nodePool.allocate().init(coordinates, direction, cost, heuristic);
+}
+
 export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                     enterPredicate=()=>{return true},
                     directions,
                     getMoveCost=()=>{return 1}) {
-    init(grid);
-    var startNode = NodePool.allocate().init(start, null, 0);
+
+    initSharedData();
+
+    let startNode = allocateNode(start, 0, start.getDistance(end));
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
     while (!priorityQueue.empty) {
-        var currentNode = priorityQueue.pop();
-        var currentCell = grid.getCart(currentNode.coordinates);
+        let currentNode = priorityQueue.pop();
+        let currentCell = grid.getCart(currentNode.coordinates);
 
         if (visitedSet.getCart(currentNode.coordinates) != undefined) {
             // current node has already been visited
@@ -85,15 +91,15 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                 continue;
             }
 
-            var cell = grid.getCart(neighbourCoordinates);
+            let cell = grid.getCart(neighbourCoordinates);
             if (!enterPredicate(cell, neighbourCoordinates)) {
                 continue;
             }
 
-            var node = NodePool.allocate().init(neighbourCoordinates, direction,
+            let node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates));
 
-            var seenNode = seenSet.getCart(neighbourCoordinates);
+            let seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {
                 // either we've never seen this node, or we have, but the new cost is lower
                 node.parent = currentNode;
@@ -112,13 +118,14 @@ export function shortestPathThroughGrid(grid, start, end,
                     getMoveCost=()=>{return 1},
                     heuristic=(current, destination) => {return current.getDistance(destination)}) {
 
-    init(grid);
-    var startNode = NodePool.allocate().init(start, 0, start.getDistance(end));
+    initSharedData();
+
+    let startNode = allocateNode(start, 0, start.getDistance(end));
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
     while (!priorityQueue.empty) {
-        var currentNode = priorityQueue.pop();
+        let currentNode = priorityQueue.pop();
 
         if (currentNode.coordinates.equals(end)) {
             return new SearchResult(currentNode);
@@ -133,16 +140,16 @@ export function shortestPathThroughGrid(grid, start, end,
             let direction = directions[i];
             let neighbourCoordinates = currentNode.coordinates.add(DirectionVectors[direction]);
 
-            var cell = grid.getCart(neighbourCoordinates);
+            let cell = grid.getCart(neighbourCoordinates);
             if (!enterPredicate(cell, neighbourCoordinates)) {
                 continue;
             }
 
-            var node = NodePool.allocate().init(neighbourCoordinates, direction,
+            let node = allocateNode(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates),
                 heuristic(neighbourCoordinates, end));
 
-            var seenNode = seenSet.getCart(neighbourCoordinates);
+            let seenNode = seenSet.getCart(neighbourCoordinates);
             if (seenNode == undefined || node.total < seenNode.total) {
                 // either we've never seen this node, or we have, but the new cost is lower
                 node.parent = currentNode;

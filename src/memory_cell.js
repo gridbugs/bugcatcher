@@ -1,6 +1,4 @@
-import {LightEntity} from './entity.js';
 import {ComponentType} from './component_type.js'
-import {ComponentCountingEntitySet} from './entity_set.js';
 import {ObjectPool} from './object_pool.js';
 import {Components} from './component_loader.js';
 import {BestTracker} from './best_tracker.js';

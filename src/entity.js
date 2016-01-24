@@ -1,7 +1,7 @@
 import {ComponentType, ComponentNames} from './component_type.js';
 import {IdMap} from './id_map.js';
 
-export class LightEntity {
+export class Entity {
     constructor(components=[]) {
         this.components = [];
         for (let c of components) {
@@ -133,14 +133,3 @@ export class LightEntity {
         }
     }
 }
-
-export class Entity extends LightEntity {
-    constructor(components) {
-        super(components);
-        this.id = Entity.nextId;
-        ++Entity.nextId;
-        Entity.table[this.id] = this;
-    }
-}
-Entity.nextId = 0;
-Entity.table = [];
