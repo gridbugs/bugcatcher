@@ -175,11 +175,15 @@ async function useAbility(level, entity) {
         } else if (item.hasComponent(Component.Cooldown)) {
             level.print('This item is cooling down.');
         } else {
-            var action = await item.Ability.getAction(level, entity);
-            if (entity.EquipmentSlot.item == item) {
-                return new Action.ActionPair(new Action.UnequipItem(entity), action);
-            } else {
-                return action;
+            try {
+                var action = await item.Ability.getAction(level, entity);
+                if (entity.EquipmentSlot.item == item) {
+                    return new Action.ActionPair(new Action.UnequipItem(entity), action);
+                } else {
+                    return action;
+                }
+            } catch (e) {
+                level.descriptionSystem.printMessage("Ignoring");
             }
         }
     } else {

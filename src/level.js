@@ -80,13 +80,11 @@ export class Level {
     scheduleImmediateAction(action, relativeTime = 0) {
         this.schedule.scheduleTask(async () => {
             this.applyAction(action);
-            if (action.direct && relativeTime > 0) {
-                if (action.entity == this.playerCharacter) {
-                    this.hudSystem.run(this.playerCharacter);
-                    this.observationSystem.run(this.playerCharacter);
-                    this.rendererSystem.run(this.playerCharacter);
-                    await mdelay(relativeTime);
-                }
+            if (action.direct && relativeTime > 0 && action.entity == this.playerCharacter) {
+                this.hudSystem.run(this.playerCharacter);
+                this.observationSystem.run(this.playerCharacter);
+                this.rendererSystem.run(this.playerCharacter);
+                await mdelay(relativeTime);
             }
         }, relativeTime, /* immediate */ true);
     }
@@ -116,7 +114,6 @@ Level.prototype.applyAction = function(action) {
         this.observationSystem.update(action);
 
         this.descriptionSystem.run(this.playerCharacter, action);
-        this.rendererSystem.run(this.playerCharacter);
 
         return true;
     }
@@ -136,13 +133,11 @@ Level.prototype.gameStep = async function(entity) {
     var action = await entity.Actor.getAction(this, entity);
 
     if (entity == this.playerCharacter) {
-        await mdelay(1);
+        await mdelay(20);
     }
 
     if (this.applyAction(action)) {
         if (action.direct) {
-            this.observationSystem.run(entity);
-            this.rendererSystem.run(entity);
             this.hudSystem.run(entity);
         }
         if (!action.shouldReschedule()) {

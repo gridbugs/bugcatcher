@@ -52,7 +52,7 @@ import {
 export function tree(x, y, level) {
     return [
         new Position(x, y, level),
-        new Tile('&', 'green', null, 1),
+        new Tile('&', 'darkgreen', null, 1),
         new Solid(),
         new Opacity(0.5),
         new Name('tree')
@@ -219,7 +219,7 @@ export function grasshopperPupa(x, y, level) {
 }
 
 export function ant(x, y, level) {
-    return character(x, y, level, 4, 4, 2, 3, 2, 10, detectVisibleArea, moveTowardsPlayer).concat([
+    return character(x, y, level, 4, 4, 2, 3, 2, 20, detectVisibleArea, moveTowardsPlayer).concat([
         new Tile('a', 'blue', null, 2), 
         new Name('ant', 'Ant'),
         new WalkTime(1.5),
@@ -231,7 +231,7 @@ export function ant(x, y, level) {
 }
 
 export function grasshopper(x, y, level) {
-    return character(x, y, level, 8, 5, 1, 2, 6, 10, detectVisibleArea, moveTowardsPlayer).concat([
+    return character(x, y, level, 8, 5, 1, 2, 6, 20, detectVisibleArea, moveTowardsPlayer).concat([
         new Tile('g', 'green', null, 2), 
         new Name('grasshopper', 'Grass Hopper'),
         new WalkTime(1),
@@ -242,7 +242,7 @@ export function grasshopper(x, y, level) {
 }
 
 export function playerCharacter(x, y, level) {
-    return character(x, y, level, 10, 4, 4, 4, 4, 20, omniscientObserver, getPlayerAction).concat([
+    return character(x, y, level, 10, 4, 4, 4, 4, 20, detectVisibleArea, getPlayerAction).concat([
         new Tile('@', 'white', null, 4),
         new Inventory(8),
         new WalkTime(1),

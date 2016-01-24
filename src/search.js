@@ -5,11 +5,7 @@ import {Heap} from './heap.js';
 import {getDefaultDrawer} from './drawer.js';
 import {NoResults} from './exception.js';
 import {ObjectPool} from './object_pool.js';
-var NodeId = 0;
 class Node {
-    constructor() {
-        this.id = NodeId++;
-    }
     init(coordinates, direction, cost, heuristic = 0) {
         this.coordinates = coordinates;
         this.direction = direction;
@@ -19,13 +15,9 @@ class Node {
         return this;
     }
 }
+import {WIDTH, HEIGHT} from './config.js';
 
 var NodePool = new ObjectPool(Node);
-
-function allocateNode(coordinates, direction, cost, heuristic = 0) {
-    var node = NodePool.allocate();
-    return node.init(coordinates, direction, cost, heuristic = 0);
-}
 
 class SearchResult {
     constructor(end) {
@@ -48,21 +40,17 @@ class SearchResult {
     }
 }
 
-var priorityQueue, visitedSet, seenSet;
+var priorityQueue = new Heap((a, b) => {return b.total - a.total});
+var visitedSet = new Grid(WIDTH, HEIGHT);
+var seenSet = new Grid(WIDTH, HEIGHT);
 
 function init(grid) {
     NodePool.flush();
-    if (priorityQueue == undefined) {
-        priorityQueue = new Heap((a, b) => {return b.total - a.total});
-        visitedSet = new Grid(grid.width, grid.height);
-        seenSet = new Grid(grid.width, grid.height);
-    } else {
-        priorityQueue.clear();
-        for (let i = 0; i < grid.height; ++i) {
-            for (let j = 0; j < grid.width; ++j) {
-                visitedSet.set(j, i, undefined);
-                seenSet.set(j, i, undefined);
-            }
+    priorityQueue.clear();
+    for (let i = 0; i < grid.height; ++i) {
+        for (let j = 0; j < grid.width; ++j) {
+            visitedSet.set(j, i, undefined);
+            seenSet.set(j, i, undefined);
         }
     }
 }
@@ -72,7 +60,7 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                     directions,
                     getMoveCost=()=>{return 1}) {
     init(grid);
-    var startNode = allocateNode(start, null, 0);
+    var startNode = NodePool.allocate().init(start, null, 0);
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -102,7 +90,7 @@ export function shortestPathThroughGridUntilPredicate(grid, start, predicate,
                 continue;
             }
 
-            var node = allocateNode(neighbourCoordinates, direction,
+            var node = NodePool.allocate().init(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates));
 
             var seenNode = seenSet.getCart(neighbourCoordinates);
@@ -125,7 +113,7 @@ export function shortestPathThroughGrid(grid, start, end,
                     heuristic=(current, destination) => {return current.getDistance(destination)}) {
 
     init(grid);
-    var startNode = allocateNode(start, 0, start.getDistance(end));
+    var startNode = NodePool.allocate().init(start, 0, start.getDistance(end));
     priorityQueue.insert(startNode);
     seenSet.setCart(start, startNode);
 
@@ -141,15 +129,16 @@ export function shortestPathThroughGrid(grid, start, end,
             continue;
         }
 
-        for (var [direction, neighbourCoordinates] of
-                grid.iterateNeighbourPairs(currentNode.coordinates, directions)) {
+        for (let i = 0; i < directions.length; ++i) {
+            let direction = directions[i];
+            let neighbourCoordinates = currentNode.coordinates.add(DirectionVectors[direction]);
 
             var cell = grid.getCart(neighbourCoordinates);
             if (!enterPredicate(cell, neighbourCoordinates)) {
                 continue;
             }
 
-            var node = allocateNode(neighbourCoordinates, direction,
+            var node = NodePool.allocate().init(neighbourCoordinates, direction,
                 currentNode.cost + getMoveCost(grid, currentNode.coordinates, neighbourCoordinates),
                 heuristic(neighbourCoordinates, end));
 

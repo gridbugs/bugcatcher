@@ -32,18 +32,6 @@ function shortestPathThroughGridCardinal(grid, start, end, canEnterPredicate) {
 }
 
 function canEnter(entity, entities) {
-    if (!entity.hasComponent(Component.CanPush) && entities.hasComponent(Component.Pushable)) {
-        return false;
-    }
-    if (entity.hasComponent(Component.Combatant)) {
-        for (let e of entities) {
-            if (e.hasComponent(Component.Combatant)) {
-                if (e.Combatant.value == entity.Combatant.value) {
-                    return false;
-                }
-            }
-        }
-    }
     return !entities.hasComponent(Component.Solid);
 }
 
@@ -58,7 +46,7 @@ export function moveTowardsPlayer(level, entity) {
     var start = entity.Position.coordinates;
 
     if (entity.canSee(playerPosition)) {
-        entity.Memory.lastSeenPlayerPosition = playerPosition;
+        entity.Memory.lastSeenPlayerPosition = playerPosition.clone();
         
         var path = shortestPathThroughGridCardinal(
             grid,
