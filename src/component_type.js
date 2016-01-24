@@ -32,7 +32,9 @@ export const ComponentType = mkenum(
     'CombatNeutral',
     'Noteworthy',
     'CombatEvent',
-    'Dead'
+    'CombatEquipmentEvent',
+    'Dead',
+    'Poisoned'
 );
 
 export const ComponentNames = mknametable(ComponentType);

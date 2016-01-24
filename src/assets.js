@@ -29,7 +29,8 @@ import {
     WalkTime,
     CombatNeutral,
     Noteworthy,
-    CombatEvent
+    CombatEvent,
+    CombatEquipmentEvent
 } from './component.js';
 
 import {
@@ -266,7 +267,7 @@ export function bee(x, y, level) {
         new Noteworthy(),
         new Combatant(1),
         new Ability(beeAbility),
-        new CombatEvent((level, owner, entity, target) => {
+        new CombatEquipmentEvent((level, owner, entity, target) => {
             level.scheduleImmediateAction(new Action.ActionPair(
                 new Action.Poison(target, 10, 5),
                 new Action.Die(entity)
@@ -274,6 +275,20 @@ export function bee(x, y, level) {
         })
     ]);
 }
+
+export function spider(x, y, level) {
+    return character(x, y, level, 24, 8, 8, 8, 8, 20, detectVisibleArea, moveTowardsPlayer).concat([
+        new Tile('S', 'white', null, 2), 
+        new Name('spider', 'Spider'),
+        new WalkTime(1),
+        new Noteworthy(),
+        new Combatant(1),
+        new CombatEvent((level, entity, target) => {
+            level.scheduleImmediateAction(new Action.Poison(target, 1, 4));
+        })
+    ]);
+}
+
 
 export function playerCharacter(x, y, level) {
     return character(x, y, level, 10, 4, 4, 4, 4, 20, detectVisibleArea, getPlayerAction).concat([

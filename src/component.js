@@ -355,5 +355,21 @@ export class CombatEvent extends Component {
 }
 CombatEvent.type = ComponentType.CombatEvent;
 
+export class CombatEquipmentEvent extends CombatEvent {
+}
+CombatEquipmentEvent.type = ComponentType.CombatEquipmentEvent;
+
 export class Dead extends Component {}
 Dead.type = ComponentType.Dead;
+
+export class Poisoned extends Component {
+    constructor(damage, time) {
+        super();
+        this.damage = damage;
+        this.time = time;
+
+        this.displayable = true;
+        this.setDisplayable('Poisoned');
+    }
+}
+Poisoned.type = ComponentType.Poisoned;

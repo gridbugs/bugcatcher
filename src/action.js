@@ -16,7 +16,8 @@ import {
     Name,
     Attack,
     Dead,
-    Ability
+    Ability,
+    Poisoned
 } from './component.js';
 
 import {
@@ -331,7 +332,10 @@ export class Die extends Action {
 
         this.entity.addComponent(new Dead());
         this.entity.addComponent(new Getable());
-        this.entity.removeComponent(Ability);
+
+        if (this.entity.hasComponent(Ability)) {
+            this.entity.removeComponent(this.entity.Ability);
+        }
     }
 }
 Die.type = ActionType.Die;
@@ -458,19 +462,32 @@ export class Poison extends Action {
     }
 
     commit(level) {
-        var remainingTime = this.duration;
-        level.registerPeriodicFunction((level) => {
-            if (this.entity.Health.value > 0) {
-                level.scheduleImmediateAction(new PoisonDamage(this.entity, this.damage));
-                --remainingTime;
-                return remainingTime > 0;
-            } else {
-                return false;
-            }
-        });
+        if (this.entity.hasComponent(Poisoned)) {
+            level.scheduleImmediateAction(new IncreasePoison(this.entity, this.damage, this.duration));
+        } else {
+            this.entity.addComponent(new Poisoned(this.damage, this.duration));
+        }
     }
 }
 Poison.type = ActionType.Poison;
+
+export class IncreasePoison extends Action {
+    constructor(entity, damage, duration) {
+        super();
+        this.entity = entity;
+        this.damage = damage;
+        this.duration = duration;
+    }
+
+    commit() {
+        this.entity.Poisoned.damage = Math.floor(
+            ((this.entity.Poisoned.damage * this.entity.Poisoned.time) +
+            (this.damage * this.duration)) / (this.entity.Poisoned.time + this.duration)
+        );
+        this.entity.Poisoned.time += this.duration;
+    }
+}
+IncreasePoison.type = ActionType.IncreasePoison;
 
 export class PoisonDamage extends Action {
     constructor(entity, damage) {

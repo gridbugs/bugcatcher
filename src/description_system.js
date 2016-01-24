@@ -167,10 +167,25 @@ export class DescriptionSystem {
             }
             break;
         case ActionType.Poison:
-            this.printMessage(`The ${action.entity.Name.fullName} becomes poisoned.`);
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('You become poisoned.');
+            } else {
+                this.printMessage(`The ${action.entity.Name.fullName} becomes poisoned.`);
+            }
+            break;
+        case ActionType.IncreasePoison:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('You become more poisoned.');
+            } else {
+                this.printMessage(`The ${action.entity.Name.fullName} becomes more poisoned.`);
+            }
             break;
         case ActionType.PosionDamage:
-            this.printMessage(`The ${action.entity.Name.fullName} suffers from poison.`);
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('You suffer from poison.');
+            } else {
+                this.printMessage(`The ${action.entity.Name.fullName} suffers from poison.`);
+            }
             break;
         }
     }

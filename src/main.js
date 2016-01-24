@@ -4,8 +4,9 @@ import {detectVisibleArea} from './recursive_shadowcast.js';
 import {initializeDefaultDrawer, getDefaultDrawer}  from './drawer.js';
 import * as Assets from './assets.js';
 import * as Config from './config.js';
-import {UpStairs, DownStairs, Position, Actor, PlayerCharacter, Timeout, Inventory} from './component.js';
+import {UpStairs, DownStairs, Position, Actor, PlayerCharacter, Timeout, Inventory, Poisoned} from './component.js';
 import * as Components from './component.js';
+import * as Actions from './action.js';
 import {loadComponents} from './component_loader.js';
 loadComponents(Components);
 
@@ -23,7 +24,7 @@ var surfaceString = [
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
-'& &           #.................#..g.....@.1.........+                  &', 
+'& &           #.................#..S.....@1..........+                  &', 
 '&             #........#........#..>.................#   &   &        & &', 
 '&     #############.####........#....................#             &    &', 
 '&     #................#.............................#           &      &', 
@@ -128,6 +129,10 @@ function initWorld(str) {
                 entities.push(make(Assets.floor(j, i)));
                 entities.push(make(Assets.beePupa(j, i)));
                 break;
+            case 'S':
+                entities.push(make(Assets.floor(j, i)));
+                entities.push(make(Assets.spider(j, i)));
+                break;
             case '(':
                 entities.push(make(Assets.floor(j, i)));
                 entities.push(make(Assets.antLarvae(j, i)));
@@ -200,6 +205,18 @@ function processTimeouts(level) {
     processEntityTimeouts(level.entities, level);
     return true;
 }
+function processPoison(level) {
+    for (let e of level.entities) {
+        if (e.hasComponent(Poisoned)) {
+            level.scheduleImmediateAction(new Actions.PoisonDamage(e, e.Poisoned.damage));
+            e.Poisoned.time--;
+            if (e.Poisoned.time == 0) {
+                level.scheduleImmediateAction(new Actions.RemoveComponent(e, e.Poisoned));
+            }
+        }
+    }
+    return true;
+}
 
 $(() => {(async function() {
  
@@ -245,6 +262,7 @@ $(() => {(async function() {
 
         for (let level of [surfaceLevel, dungeonLevel]) {
             level.registerPeriodicFunction(processTimeouts, 1);
+            level.registerPeriodicFunction(processPoison, 1);
         }
 
     })();

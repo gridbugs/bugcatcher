@@ -2,7 +2,8 @@ import {
     MeleeAttack,
     MeleeAttackDodge,
     MeleeAttackHit,
-    MeleeAttackBlock
+    MeleeAttackBlock,
+    IncreasePoison
 } from './action.js';
 import {ActionType} from './action_type.js';
 
@@ -15,7 +16,8 @@ import {
     Attack,
     Defence,
     CombatNeutral,
-    PlayerCharacter
+    PlayerCharacter,
+    Poisoned
 } from './component.js';
 
 
@@ -83,6 +85,12 @@ export class CombatSystem {
                         break;
                     }
                 }
+            }
+            break;
+        case ActionType.Poison:
+            if (action.entity.hasComponent(Poisoned)) {
+                action.fail();
+                this.level.scheduleImmediateAction(new IncreasePoison(action.entity, action.damage, action.duration));
             }
             break;
        }

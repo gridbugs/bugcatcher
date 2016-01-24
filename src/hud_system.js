@@ -176,7 +176,7 @@ export class HudSystem {
         this.$hudModifiers.append(modifiers.join(', '));
 
         this.$hudTitle.empty();
-        this.$hudTitle.append(`<span id="hud-title-player">${entity.Name.fullName}</span>`);
+        this.$hudTitle.append(`<span id="hud-title-player">${entity.Name.shortName}</span>`);
 
         this.$hudStatistics.empty();
         if (entity.EquipmentSlot.item == null) {
