@@ -84,11 +84,12 @@ export class DescriptionSystem {
             }
             break;
         case ActionType.Die:
-            if (action.attack.attacker.hasComponent(PlayerCharacter)) {
+            if (action.attack != null && action.attack.attacker.hasComponent(PlayerCharacter)) {
                 this.printMessage(`You kill the ${action.target.Name.value}.`);
-            }
-            if (action.entity.hasComponent(PlayerCharacter)) {
+            } else if (action.entity.hasComponent(PlayerCharacter)) {
                 this.printMessage('You die.');
+            } else {
+                this.printMessage(`The ${action.entity.Name.value} dies.`);
             }
             break;
         case ActionType.Ascend:
@@ -159,6 +160,17 @@ export class DescriptionSystem {
             if (action.entity.hasComponent(PlayerCharacter)) {
                 this.printMessage(`You fail to channel the ${action.item.Name.fullName} as it is cooling down.`);
             }
+            break;
+        case ActionType.Heal:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                this.printMessage('You recover some health.');
+            }
+            break;
+        case ActionType.Poison:
+            this.printMessage(`The ${action.entity.Name.fullName} becomes poisoned.`);
+            break;
+        case ActionType.PosionDamage:
+            this.printMessage(`The ${action.entity.Name.fullName} suffers from poison.`);
             break;
         }
     }

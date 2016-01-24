@@ -30,7 +30,9 @@ export const ComponentType = mkenum(
     'Timeout',
     'WalkTime',
     'CombatNeutral',
-    'Noteworthy'
+    'Noteworthy',
+    'CombatEvent',
+    'Dead'
 );
 
 export const ComponentNames = mknametable(ComponentType);

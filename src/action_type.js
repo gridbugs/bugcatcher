@@ -31,5 +31,8 @@ export const ActionType = mkenum(
     'EquipItem',
     'UnequipItem',
     'ActionPair',
-    'FailToEquipItem'
+    'FailToEquipItem',
+    'Heal',
+    'Poison',
+    'PoisonDamage'
 );

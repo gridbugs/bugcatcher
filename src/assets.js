@@ -28,7 +28,8 @@ import {
     Timeout,
     WalkTime,
     CombatNeutral,
-    Noteworthy
+    Noteworthy,
+    CombatEvent
 } from './component.js';
 
 import {
@@ -46,8 +47,11 @@ import {
 
 import {
     jumpAbility,
-    antAbility
+    antAbility,
+    beeAbility
 } from './ability.js';
+
+import * as Action from './action.js';
 
 export function tree(x, y, level) {
     return [
@@ -233,11 +237,41 @@ export function ant(x, y, level) {
 export function grasshopper(x, y, level) {
     return character(x, y, level, 8, 5, 1, 2, 6, 20, detectVisibleArea, moveTowardsPlayer).concat([
         new Tile('g', 'green', null, 2), 
-        new Name('grasshopper', 'Grass Hopper'),
+        new Name('grasshopper', 'Grass Hppr'),
         new WalkTime(1),
         new Noteworthy(),
         new Combatant(1),
         new Ability(jumpAbility)
+    ]);
+}
+
+export function beePupa(x, y, level) {
+     return character(x, y, level, 3, 0, 7, 0, 0, 0, blindObserver, getWait).concat([
+        new Tile('[', 'yellow', null, 2), 
+        new Name('bee pupa', 'Bee Pupa'),
+        new Noteworthy(),
+        new Getable(),
+        new CombatNeutral(),
+        new Timeout(15, (entity, level) => {
+            entity.become(bee(entity.x, entity.y, level));
+        }, 'The bee pupa becomes a bee.')
+    ]);
+}
+
+export function bee(x, y, level) {
+    return character(x, y, level, 7, 2, 1, 2, 4, 20, detectVisibleArea, moveTowardsPlayer).concat([
+        new Tile('b', 'yellow', null, 2), 
+        new Name('bee', 'Bee'),
+        new WalkTime(1),
+        new Noteworthy(),
+        new Combatant(1),
+        new Ability(beeAbility),
+        new CombatEvent((level, owner, entity, target) => {
+            level.scheduleImmediateAction(new Action.ActionPair(
+                new Action.Poison(target, 10, 5),
+                new Action.Die(entity)
+            ));
+        })
     ]);
 }
 

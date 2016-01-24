@@ -32,3 +32,10 @@ export async function antAbility(level, entity) {
         entity.addComponent(new Component.CanPush().makeTemporary(11, 'Your ant-like strength subsides.').setDisplayable('Ant-like Strength'));
     }, entity, `[${this.entity.Name.fullName}] You gain ant-like strength.`), new Action.EnterCooldown(this.entity, 15));
 }
+
+export function beeAbility(level, entity) {
+    return new Action.ActionPair(
+        new Action.Heal(entity, Math.floor(Math.random(4)) + 2),
+        new Action.EnterCooldown(this.entity, 10)
+    );
+}

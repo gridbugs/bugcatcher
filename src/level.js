@@ -1,4 +1,5 @@
 import {mdelay} from './time.js';
+import {Vec2} from './vec2.js';
 
 import {Schedule} from './schedule.js';
 
@@ -14,6 +15,7 @@ import {DoorSystem} from './door_system.js';
 import {CombatSystem} from './combat_system.js';
 import {PushSystem} from './push_system.js';
 import {EquipmentSystem} from './equipment_system.js';
+import {CombatEventSystem} from './combat_event_system.js';
 
 import {
     PlayerCharacter,
@@ -47,12 +49,14 @@ export class Level {
         this.combatSystem = new CombatSystem(this);
         this.pushSystem = new PushSystem(this);
         this.equipmentSystem = new EquipmentSystem(this);
+        this.combatEventSystem = new CombatEventSystem(this);
     }
 
     addEntity(entity, x, y) {
         this.entities.add(entity);
         if (entity.hasComponent(Position)) {
             entity.Position.level = this;
+            entity.Position.coordinates = new Vec2(x, y);
         } else {
             entity.addComponent(new Position(x, y, this));
         }
@@ -72,7 +76,7 @@ export class Level {
     scheduleActorTurn(entity, relativeTime = 1) {
         entity.Actor.scheduled = true;
         this.schedule.scheduleTask(async () => {
-            entity.scheduled = false;
+            entity.Actor.scheduled = false;
             await this.gameStep(entity);
         }, relativeTime);
     }
@@ -108,6 +112,7 @@ Level.prototype.applyAction = function(action) {
     this.combatSystem.check(action);
     this.pushSystem.check(action);
     this.equipmentSystem.check(action);
+    this.combatEventSystem.check(action);
 
     if (action.success) {
         action.commit(this);

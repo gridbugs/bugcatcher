@@ -12,7 +12,11 @@ import {
     Cooldown,
     WalkTime,
     Actor,
-    PlayerCharacter
+    PlayerCharacter,
+    Name,
+    Attack,
+    Dead,
+    Ability
 } from './component.js';
 
 import {
@@ -296,9 +300,11 @@ export class Die extends Action {
     constructor(entity, attack) {
         super();
         this.entity = entity;
-        this.attack = attack;
-        this.attacker = attack.entity;
-        this.target = attack.target;
+        if (attack != null) {
+            this.attack = attack;
+            this.attacker = attack.entity;
+            this.target = attack.target;
+        }
     }
 
     commit() {
@@ -309,7 +315,23 @@ export class Die extends Action {
         }
         if (this.entity.hasComponent(Actor)) {
             this.entity.Actor.disable();
+            this.entity.Actor.alive = false;
         }
+        if (this.entity.hasComponent(Name)) {
+            this.entity.Name.fullName = `dead ${this.entity.Name.fullName}`;
+            this.entity.Name.shortName = `D. ${this.entity.Name.shortName}`;
+        }
+        if (this.entity.hasComponent(Attack)) {
+            this.entity.Attack.value = 0;
+            this.entity.Defence.value = 0;
+            this.entity.Dodge.value = 0;
+            this.entity.Accuracy.value = 0;
+        }
+        this.entity.Health.value = 0;
+
+        this.entity.addComponent(new Dead());
+        this.entity.addComponent(new Getable());
+        this.entity.removeComponent(Ability);
     }
 }
 Die.type = ActionType.Die;
@@ -410,3 +432,57 @@ export class FailToEquipItem extends IndirectAction {
     }
 }
 FailToEquipItem.type = ActionType.FailToEquipItem;
+
+export class Heal extends Action {
+    constructor(entity, health) {
+        super();
+        this.entity = entity;
+        this.health = health;
+    }
+
+    commit() {
+        this.entity.Health.value = Math.min(
+            this.entity.Health.value + this.health,
+            this.entity.Health.maxValue
+        );
+    }
+}
+Heal.type = ActionType.Heal;
+
+export class Poison extends Action {
+    constructor(entity, damage, duration) {
+        super();
+        this.entity = entity;
+        this.damage = damage;
+        this.duration = duration;
+    }
+
+    commit(level) {
+        var remainingTime = this.duration;
+        level.registerPeriodicFunction((level) => {
+            if (this.entity.Health.value > 0) {
+                level.scheduleImmediateAction(new PoisonDamage(this.entity, this.damage));
+                --remainingTime;
+                return remainingTime > 0;
+            } else {
+                return false;
+            }
+        });
+    }
+}
+Poison.type = ActionType.Poison;
+
+export class PoisonDamage extends Action {
+    constructor(entity, damage) {
+        super();
+        this.entity = entity;
+        this.damage = damage;
+    }
+
+    commit(level) {
+        this.entity.Health.value -= this.damage;
+        if (this.entity.Health.value <= 0) {
+            level.scheduleImmediateAction(new Die(this.entity));
+        }
+    }
+}

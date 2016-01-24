@@ -23,11 +23,11 @@ var surfaceString = [
 '&      &      #........#........#....................#           &      &', 
 '& &   &       #........#........#....................#            &     &', 
 '&             #........#........#....................#             &    &', 
-'& &           #.................#........@...........+                  &', 
+'& &           #.................#..g.....@.1.........+                  &', 
 '&             #........#........#..>.................#   &   &        & &', 
-'&     #############.####........#..ggggggg...........#             &    &', 
-'&     #................#...........ggggggg...........#           &      &', 
-'&   & #.........................#.*.*ggggg...........#                  &', 
+'&     #############.####........#....................#             &    &', 
+'&     #................#.............................#           &      &', 
+'&   & #.........................#.*.*................#                  &', 
 '&     #................#........#....*...............#    &     & &     &', 
 '&     #................#........#..*.................#                  &', 
 '&  &  .................#........#....................#          & &     &', 
@@ -124,6 +124,10 @@ function initWorld(str) {
                 entities.push(make(Assets.floor(j, i)));
                 entities.push(make(Assets.targetDummy(j, i)));
                 break;
+            case '1':
+                entities.push(make(Assets.floor(j, i)));
+                entities.push(make(Assets.beePupa(j, i)));
+                break;
             case '(':
                 entities.push(make(Assets.floor(j, i)));
                 entities.push(make(Assets.antLarvae(j, i)));
@@ -172,7 +176,7 @@ async function gameLoop(playerCharacter) {
     while (true) {
         level = playerCharacter.Position.level;
         await level.progressSchedule();
-        if (!playerCharacter.Actor.active) {
+        if (!playerCharacter.Actor.alive) {
             break;
         }
     }

@@ -92,7 +92,7 @@ export class Position extends Component {
     }
 
     afterAdd() {
-        if (this.level != null && this.entity.id != undefined) {
+        if (this.level != null) {
             this.addToSpacialHash();
         }
     }
@@ -138,12 +138,15 @@ export class Actor extends Component {
         this.getAction = getAction;
         this.active = false;
         this.scheduled = false;
+        this.alive = true;
     }
 
     enable(level) {
-        this.active = true;
-        if (!this.scheduled) {
-            level.scheduleActorTurn(this.entity, 0);
+        if (this.alive) {
+            this.active = true;
+            if (!this.scheduled) {
+                level.scheduleActorTurn(this.entity, 0);
+            }
         }
     }
 
@@ -343,3 +346,14 @@ CombatNeutral.type = ComponentType.CombatNeutral;
 
 export class Noteworthy extends Component {}
 Noteworthy.type = ComponentType.Noteworthy;
+
+export class CombatEvent extends Component {
+    constructor(fn) {
+        super();
+        this.event = fn;
+    }
+}
+CombatEvent.type = ComponentType.CombatEvent;
+
+export class Dead extends Component {}
+Dead.type = ComponentType.Dead;
