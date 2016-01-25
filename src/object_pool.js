@@ -20,6 +20,12 @@ export class ObjectPool {
         this.index = 0;
     }
 
+    freeLast() {
+        if (this.index > 0) {
+            --this.index;
+        }
+    }
+
     *[Symbol.iterator]() {
         for (let i = 0; i < this.index; ++i) {
             yield this.array[i];

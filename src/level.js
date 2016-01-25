@@ -24,16 +24,12 @@ import {
 } from './component.js';
 
 export class Level {
-    constructor(width, height, entities, p) {
+    constructor(width, height) {
 
         this.id = Level.nextId++;
 
-        this.entities = new EntitySet(entities);
+        this.entities = null;
         this.entitySpacialHash = new SpacialHash(width, height, ComponentCountingEntitySet);
-        if (p) {
-            this.entitySpacialHash.get(53, 9).print = true;
-        }
-        this.entitySpacialHash.initialize(entities);
 
         this.width = width;
         this.height = height;
@@ -50,6 +46,20 @@ export class Level {
         this.pushSystem = new PushSystem(this);
         this.equipmentSystem = new EquipmentSystem(this);
         this.combatEventSystem = new CombatEventSystem(this);
+    }
+
+    initialize(entities) {
+        this.entities = new EntitySet(entities);
+        this.entitySpacialHash.initialize(entities);
+        for (let e of this.entities) {
+            if (e.hasComponent(Position)) {
+                e.Position.addToSpacialHash();
+            }
+            if (e.hasComponent(Actor)) {
+                e.Actor.enable(this);
+            }
+        }
+        this.observationSystem.initialize();
     }
 
     addEntity(entity, x, y) {

@@ -49,12 +49,16 @@ export class ObservationSystem {
         this.numCols = numCols;
         this.numRows = numRows;
         this.grid = new Grid(this.numCols, this.numRows);
+   }
+
+    initialize() {
         for (let [i, j] of this.grid.coordinates()) {
             let entities = this.level.entitySpacialHash.get(j, i);
             let cell = new ObservationCell(j, i);
             cell.update(entities);
             this.grid.set(j, i, cell);
         }
+ 
     }
 
     run(entity) {

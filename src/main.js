@@ -8,9 +8,17 @@ import {UpStairs, DownStairs, Position, Actor, PlayerCharacter, Timeout, Invento
 import * as Components from './component.js';
 import * as Actions from './action.js';
 import {loadComponents} from './component_loader.js';
+import {generateAntHillLevel} from './ant_hill_generator.js';
 loadComponents(Components);
 
 import {Level} from './level.js';
+
+let seed = Config.RNG_SEED;
+if (seed == null) {
+    seed = new Date().getTime();
+}
+Math.seedrandom(seed);
+console.log('RNG_SEED: ', seed);
 
 var entities = [];
 
@@ -220,10 +228,13 @@ function processPoison(level) {
 
 $(() => {(async function() {
  
-    initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
-    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(surfaceString), true);
-    dungeonLevel = new Level(Config.WIDTH, Config.HEIGHT, initWorld(dungeonString));
+/*
+    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT);
+    dungeonLevel = new Level(Config.WIDTH, Config.HEIGHT);
+
+    surfaceLevel.initialize(initWorld(surfaceString));
+    dungeonLevel.initialize(initWorld(dungeonString));
 
     (() => {
         var upStairs, downStairs;
@@ -258,9 +269,15 @@ $(() => {(async function() {
 
         surfaceLevel.setPlayerCharacter(playerCharacter);
         dungeonLevel.setPlayerCharacter(playerCharacter);
+*/
+    (() => {
+        initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
+        let testLevel = generateAntHillLevel(Config.WIDTH, Config.HEIGHT, true);
+        playerCharacter = getPlayerCharacter(testLevel.entities);
+        testLevel.setPlayerCharacter(playerCharacter);
 
-        for (let level of [surfaceLevel, dungeonLevel]) {
+        for (let level of [testLevel]) {
             level.registerPeriodicFunction(processTimeouts, 1);
             level.registerPeriodicFunction(processPoison, 1);
         }

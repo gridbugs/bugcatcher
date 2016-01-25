@@ -44,3 +44,14 @@ export function arraySwap(array, i, j) {
 export function arrayRandom(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
+
+export function arrayShuffle(array) {
+    for (let i = 0; i < array.length; ++i) {
+        let index = i + Math.floor(Math.random() * (array.length - i))
+        arraySwap(array, i, index);
+    }
+}
+
+export function randomInt(min, max) {
+    return Math.floor(min + Math.random() * (max - min));
+}
