@@ -204,6 +204,9 @@ export class Descend extends IndirectAction {
     }
 
     commit(level) {
+        this.stairs.DownStairs.level.generate();
+        this.stairs.DownStairs.level.playerCharacter = level.playerCharacter;
+        this.stairs.DownStairs.coordinates = this.stairs.DownStairs.level.playerStart;
         level.scheduleImmediateAction(
             new ExitLevel(this.entity, this.stairs.DownStairs.level, this.stairs.DownStairs.coordinates)
         );

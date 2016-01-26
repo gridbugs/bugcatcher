@@ -17,6 +17,9 @@ import {PushSystem} from './push_system.js';
 import {EquipmentSystem} from './equipment_system.js';
 import {CombatEventSystem} from './combat_event_system.js';
 
+import {processTimeouts, processPoison} from './periodic.js';
+import {generateLevel} from './level_generator.js';
+
 import {
     PlayerCharacter,
     Position,
@@ -46,6 +49,24 @@ export class Level {
         this.pushSystem = new PushSystem(this);
         this.equipmentSystem = new EquipmentSystem(this);
         this.combatEventSystem = new CombatEventSystem(this);
+
+        this.registerPeriodicFunction(processTimeouts, 1);
+        this.registerPeriodicFunction(processPoison, 1);
+
+        this.previousLevel = null;
+        this.bossLevel = false;
+        this.generated = false;
+        this.downStairs = null;
+        this.playerStart = null;
+    }
+
+    generate() {
+        if (!this.generated) {
+            generateLevel(this, this.width, this.height, this.previousLevel == null, this.previousLevel, !this.bossLevel);
+            this.generated = true;
+            this.downStairs.DownStairs.level = new Level(this.width, this.height);
+            this.downStairs.DownStairs.level.previousLevel = this;
+        }
     }
 
     initialize(entities) {
