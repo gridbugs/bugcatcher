@@ -8,7 +8,7 @@ import {UpStairs, DownStairs, Position, Actor, PlayerCharacter, Timeout, Invento
 import * as Components from './component.js';
 import * as Actions from './action.js';
 import {loadComponents} from './component_loader.js';
-import {generateAntHillLevel} from './ant_hill_generator.js';
+import {generateLevel} from './level_generator.js';
 loadComponents(Components);
 
 import {Level} from './level.js';
@@ -273,7 +273,7 @@ $(() => {(async function() {
     (() => {
         initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
-        let testLevel = generateAntHillLevel(Config.WIDTH, Config.HEIGHT, true);
+        let testLevel = generateLevel(Config.WIDTH, Config.HEIGHT, true);
         playerCharacter = getPlayerCharacter(testLevel.entities);
         testLevel.setPlayerCharacter(playerCharacter);
 

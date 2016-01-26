@@ -55,3 +55,11 @@ export function arrayShuffle(array) {
 export function randomInt(min, max) {
     return Math.floor(min + Math.random() * (max - min));
 }
+
+export function* generateNonNull(iterable) {
+    for (let x of iterable) {
+        if (x != undefined) {
+            yield x;
+        }
+    }
+}

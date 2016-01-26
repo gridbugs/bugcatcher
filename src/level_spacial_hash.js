@@ -33,7 +33,7 @@ export class LevelSpacialHash {
         if (spacialHash != null) {
             for (let i = 0; i < spacialHash.height; ++i) {
                 for (let j = 0; j < spacialHash.width; ++j) {
-                    yield spacialHash.array[i][j];
+                    yield spacialHash.array[i][j].value;
                 }
             }
         }
