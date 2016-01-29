@@ -32,9 +32,6 @@ export class RendererSystem {
             if (!memoryCell.known) {
                 continue;
             }
-            if (memoryCell.getTopEntity().Tile.character == 'b') {
-                console.debug(memoryCell.array[0]);
-            }
             let lastSeenTime = memoryCell.turn;
             let entity = memoryCell.getTopEntity();
             let entry = this.grid.getCart(memoryCell);
