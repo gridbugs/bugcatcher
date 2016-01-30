@@ -183,6 +183,20 @@ export function antLarvae(x, y, level) {
     ]);
 }
 
+export function beeLarvae(x, y, level) {
+    return character(x, y, level, 2, 0, 1, 0, 1, 0, blindObserver, getRandomMovement).concat([
+        new Timeout(10, (entity, level) => {
+            entity.become(beePupa(entity.x, entity.y, level));
+        }, 'The bee larvae becomes a pupa.'),
+        new Tile('(', 'yellow', null, 2), 
+        new Name('bee larvae', 'Bee Larvae'),
+        new CombatNeutral(),
+        new WalkTime(5),
+        new Noteworthy(),
+        new Getable()
+    ]);
+}
+
 export function grasshopperLarvae(x, y, level) {
     return character(x, y, level, 2, 0, 1, 0, 1, 0, blindObserver, getRandomMovement).concat([
         new Timeout(20, (entity, level) => {

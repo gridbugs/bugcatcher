@@ -199,48 +199,6 @@ async function gameLoop(playerCharacter) {
 }
 
 $(() => {(async function() {
-
-/*
-    surfaceLevel = new Level(Config.WIDTH, Config.HEIGHT);
-    dungeonLevel = new Level(Config.WIDTH, Config.HEIGHT);
-
-    surfaceLevel.initialize(initWorld(surfaceString));
-    dungeonLevel.initialize(initWorld(dungeonString));
-
-    (() => {
-        var upStairs, downStairs;
-        for (let entity of dungeonLevel.entities) {
-            if (entity.hasComponent(UpStairs)) {
-                upStairs = entity;
-            }
-        }
-        for (let entity of surfaceLevel.entities) {
-            if (entity.hasComponent(DownStairs)) {
-                downStairs = entity;
-            }
-        }
-
-        upStairs.UpStairs.level = surfaceLevel;
-        upStairs.UpStairs.coordinates = downStairs.Position.coordinates.clone();
-
-        downStairs.DownStairs.level = dungeonLevel;
-        downStairs.DownStairs.coordinates = upStairs.Position.coordinates.clone();
-
-        for (let e of surfaceLevel.entities) {
-            if (e.hasComponent(Position)) {
-                e.Position.level = surfaceLevel;
-                e.Position.addToSpacialHash();
-            }
-            if (e.hasComponent(Actor)) {
-                e.Actor.enable(surfaceLevel);
-            }
-        }
-
-        playerCharacter = getPlayerCharacter(surfaceLevel.entities);
-
-        surfaceLevel.setPlayerCharacter(playerCharacter);
-        dungeonLevel.setPlayerCharacter(playerCharacter);
-*/
     (() => {
         initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 

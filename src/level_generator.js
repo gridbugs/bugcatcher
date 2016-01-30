@@ -216,6 +216,26 @@ export function generateLevel(level, width, height, includePlayerCharacter = fal
         }
     }
 
+    function getEmptyCoordinates() {
+        let emptyCoordinates = [];
+        for (let cell of grid.cells()) {
+            if (cell.value == Tile.Floor) {
+                emptyCoordinates.push(cell.coordinates);
+            }
+        }
+        return emptyCoordinates;
+    }
+
+    let emptyCoordinates = getEmptyCoordinates(); 
+
+    let larvae = [Assets.beeLarvae, Assets.antLarvae, Assets.grasshopperLarvae];
+
+    arrayShuffle(emptyCoordinates);
+    for (let i = 0; i < randomInt(30, 50); ++i) {
+        let coord = emptyCoordinates.pop();
+        grid.set(coord, arrayRandom(larvae));
+    }
+
     for (let cell of grid.cells()) {
         switch (cell.value) {
         case Tile.Wall:
@@ -233,17 +253,15 @@ export function generateLevel(level, width, height, includePlayerCharacter = fal
         case Tile.Door:
             add(Assets.door, cell.x, cell.y);
             break;
+        default:
+            add(Assets.dirt, cell.x, cell.y);
+            add(cell.value, cell.x, cell.y);
         }
     }
 
     let stairsDistancePoint;
 
-    let emptyCoordinates = [];
-    for (let cell of grid.cells()) {
-        if (cell.value == Tile.Floor) {
-            emptyCoordinates.push(cell.coordinates);
-        }
-    }
+    emptyCoordinates = getEmptyCoordinates(); 
     let playerStart = arrayRandom(emptyCoordinates);
     if (includePlayerCharacter) {
         add(Assets.playerCharacter, playerStart.x, playerStart.y);

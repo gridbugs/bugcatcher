@@ -110,8 +110,9 @@ export class MemoryCell extends ObjectPool {
     }
 
     see(entity) {
-        this.allocate().see(entity, this);
-        this.maxZIndex.insert(entity);
+        let memoryEntity = this.allocate();
+        memoryEntity.see(entity, this);
+        this.maxZIndex.insert(memoryEntity);
     }
 
     get known() {
