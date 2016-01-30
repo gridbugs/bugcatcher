@@ -207,6 +207,16 @@ $(() => {(async function() {
         playerCharacter = getPlayerCharacter(firstLevel.entities);
         firstLevel.setPlayerCharacter(playerCharacter);
 
+
+        firstLevel.print("Movement: arrow keys");
+        firstLevel.print("Get item: g");
+        firstLevel.print("Drop item: d");
+        firstLevel.print("Channel item: e");
+        firstLevel.print("Use ability: a");
+        firstLevel.print("Stop channeling: r");
+        firstLevel.print("Close adjacent door: c");
+        firstLevel.print("Accept jump: enter");
+
     })();
 
     await gameLoop(playerCharacter);

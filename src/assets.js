@@ -252,7 +252,7 @@ export function ant(x, y, level) {
 }
 
 export function grasshopper(x, y, level) {
-    return character(x, y, level, 1, 5, 1, 2, 6, 20, detectVisibleArea, moveTowardsPlayer).concat([
+    return character(x, y, level, 8, 5, 1, 2, 6, 20, detectVisibleArea, moveTowardsPlayer).concat([
         new Tile('g', 'green', null, 2), 
         new Name('grasshopper', 'Grass Hppr'),
         new WalkTime(1),
