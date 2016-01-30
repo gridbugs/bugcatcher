@@ -11,6 +11,10 @@ export class NumericInventory {
         this.array = new Array(numSlots);
     }
 
+    get full() {
+        return this.slotAllocator.empty;
+    }
+
     insert(entity) {
         try {
             var slotIndex = this.slotAllocator.pop();

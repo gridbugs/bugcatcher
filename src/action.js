@@ -17,7 +17,8 @@ import {
     Attack,
     Dead,
     Ability,
-    Poisoned
+    Poisoned,
+    EquipmentSlot
 } from './component.js';
 
 import {
@@ -281,6 +282,18 @@ export class MeleeAttackHit extends Action {
     }
 
     commit(level) {
+
+        if (this.entity.hasComponent(EquipmentSlot)) {
+            let item = this.entity.EquipmentSlot.item;
+            if (item != null && item.Health.value > 0) {
+                item.Health.value -= this.damage;
+                if (item.Health.value <= 0) {
+                    level.scheduleImmediateAction(new Die(item, this.attack));
+                    level.scheduleImmediateAction(new UnequipItem(this.entity));
+                }
+            }
+        }
+
         this.entity.Health.value -= this.damage;
         if (this.entity.Health.value <= 0) {
             level.scheduleImmediateAction(new Die(this.entity, this.attack));
@@ -312,7 +325,9 @@ export class Die extends Action {
     }
 
     commit() {
-        this.entity.removeComponents(Combatant);
+        if (this.entity.hasComponent(Combatant)) {
+            this.entity.removeComponents(Combatant);
+        }
         if (!this.entity.hasComponent(PlayerCharacter)) {
             this.entity.Tile.character = '%';
             this.entity.Tile.zIndex = 1;

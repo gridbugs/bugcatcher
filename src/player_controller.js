@@ -126,6 +126,9 @@ function descendStairs(level, entity) {
 
 function getItem(level, entity) {
     var cell = level.entitySpacialHash.getCart(entity.Position.coordinates);
+    if (entity.Inventory.inventory.full) {
+        return;
+    }
     for (let e of cell) {
         if (e.hasComponent(Component.Getable)) {
             return new Action.GetItem(entity, e);
