@@ -30,7 +30,9 @@ import {
     CombatNeutral,
     Noteworthy,
     CombatEvent,
-    CombatEquipmentEvent
+    CombatEquipmentEvent,
+    Web,
+    WebProof
 } from './component.js';
 
 import {
@@ -290,8 +292,10 @@ export function bee(x, y, level) {
     ]);
 }
 
+
+
 export function spider(x, y, level) {
-    return character(x, y, level, 24, 8, 8, 8, 8, 20, detectVisibleArea, moveTowardsPlayer).concat([
+    return character(x, y, level, 24, 8, 8, 8, 8, 20, omniscientObserver, moveTowardsPlayer).concat([
         new Tile('S', 'white', null, 2), 
         new Name('spider', 'Spider'),
         new WalkTime(1),
@@ -299,13 +303,14 @@ export function spider(x, y, level) {
         new Combatant(1),
         new CombatEvent((level, entity, target) => {
             level.scheduleImmediateAction(new Action.Poison(target, 1, 4));
-        })
+        }),
+        new WebProof()
     ]);
 }
 
 
 export function playerCharacter(x, y, level) {
-    return character(x, y, level, 10, 4, 4, 4, 4, 20, detectVisibleArea, getPlayerAction).concat([
+    return character(x, y, level, 10, 4, 4, 4, 4, 20, omniscientObserver, getPlayerAction).concat([
         new Tile('@', 'white', null, 4),
         new Inventory(8),
         new WalkTime(1),
@@ -327,5 +332,13 @@ export function targetDummy(x, y, level) {
         new Dodge(1),
         new Name("target dummy"),
         new Noteworthy()
+    ];
+}
+
+export function web(x, y, level) {
+    return [
+        new Position(x, y, level), 
+        new Tile('"', 'white', null, 3),
+        new Web(4)
     ];
 }

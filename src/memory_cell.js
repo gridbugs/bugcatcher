@@ -3,27 +3,6 @@ import {ObjectPool} from './object_pool.js';
 import {Components} from './component_loader.js';
 import {BestTracker} from './best_tracker.js';
 
-function makeMemoryEntity(entity, ret) {
-
-    if (entity.hasComponentType(ComponentType.Position)) {
-        ret.addComponent(entity.Position.clone());
-    }
-    if (entity.hasComponentType(ComponentType.Tile)) {
-        ret.addComponent(entity.Tile.clone());
-    }
-    if (entity.hasComponentType(ComponentType.Name)) {
-        ret.addComponent(entity.Name.clone());
-    }
-    if (entity.hasComponentType(ComponentType.PlayerCharacter)) {
-        ret.addComponent(entity.PlayerCharacter.clone());
-    }
-    if (entity.hasComponentType(ComponentType.Solid)) {
-        ret.addComponent(entity.Solid.clone());
-    }
-
-    return ret;
-}
-
 class MemoryEntity {
     constructor() {
         this.Position = new Components.Position();
@@ -31,9 +10,11 @@ class MemoryEntity {
         this._Name = new Components.Name()
         this._PlayerCharacter = new Components.PlayerCharacter();
         this._Solid = new Components.Solid();
+        this._Pushable = new Components.Pushable();
         this.Name = null;
         this.PlayerCharacter = null;
         this.Solid = null;
+        this.Pushable = null;
     }
 
     see(entity, cell) {
@@ -72,6 +53,13 @@ class MemoryEntity {
         } else {
             this.Solid = null;
         }
+
+        if (entity.Pushable) {
+            this.Pushable = this._Pushable;
+            cell.Pushable = true;
+        } else {
+            this.Pushable = null;
+        }
     }
 
     hasComponent(component) {
@@ -97,6 +85,7 @@ export class MemoryCell extends ObjectPool {
         this.Name = false;
         this.PlayerCharacter = false;
         this.Solid = false;
+        this.Pushable = false;
     }
 
     clear() {

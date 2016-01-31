@@ -69,7 +69,7 @@ export class ComponentCountingEntitySet extends EntitySet {
             return;
         }
         for (let c of entity.iterateComponents()) {
-            --this.componentCount[c];
+            --this.componentCount[c.type];
         }
         super.delete(entity);
     }

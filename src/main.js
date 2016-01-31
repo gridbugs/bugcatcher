@@ -202,7 +202,8 @@ $(() => {(async function() {
     (() => {
         initializeDefaultDrawer(Config.WIDTH, Config.HEIGHT, document.getElementById(Config.CANVAS_NAME));
 
-        let firstLevel = new Level(Config.WIDTH, Config.HEIGHT);
+        let firstLevel = new Level(Config.WIDTH, Config.HEIGHT, 0);
+        firstLevel.bossLevel = true;
         firstLevel.generate();
         playerCharacter = getPlayerCharacter(firstLevel.entities);
         firstLevel.setPlayerCharacter(playerCharacter);

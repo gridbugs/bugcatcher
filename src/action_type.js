@@ -35,5 +35,6 @@ export const ActionType = mkenum(
     'Heal',
     'Poison',
     'IncreasePoison',
-    'PoisonDamage'
+    'PoisonDamage',
+    'StruggleInWeb'
 );

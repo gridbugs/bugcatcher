@@ -35,7 +35,7 @@ class Node {
     }
 }
 
-export function generateLevel(level, width, height, includePlayerCharacter = false, previousLevel = null, includeStairs = true) {
+export function generateLevel(level, width, height, depth, includePlayerCharacter = false, previousLevel = null, includeStairs = true, includeBoss = false) {
     level.previousLevel = previousLevel;
     let entities = new Set();
     let add = (e, x, y) => {
@@ -227,13 +227,19 @@ export function generateLevel(level, width, height, includePlayerCharacter = fal
     }
 
     let emptyCoordinates = getEmptyCoordinates(); 
-
-    let larvae = [Assets.beeLarvae, Assets.antLarvae, Assets.grasshopperLarvae];
-
     arrayShuffle(emptyCoordinates);
-    for (let i = 0; i < randomInt(30, 50); ++i) {
-        let coord = emptyCoordinates.pop();
-        grid.set(coord, arrayRandom(larvae));
+
+    if (includeBoss) {
+        for (let i = 0; i < randomInt(30, 50); ++i) {
+            let coord = emptyCoordinates.pop();
+            grid.set(coord, Assets.web);
+        }
+    } else {
+        let larvae = [Assets.beeLarvae, Assets.antLarvae, Assets.grasshopperLarvae];
+        for (let i = 0; i < randomInt(30, 50); ++i) {
+            let coord = emptyCoordinates.pop();
+            grid.set(coord, arrayRandom(larvae));
+        }
     }
 
     for (let cell of grid.cells()) {
@@ -269,48 +275,49 @@ export function generateLevel(level, width, height, includePlayerCharacter = fal
     stairsDistancePoint = playerStart;
     level.playerStart = playerStart;
 
-    if (includeStairs) {
+    let stairsDistanceMap = new Grid(width, height);
+    queue = [{coordinates: stairsDistancePoint, distance: 0}];
+    while (queue.length != 0) {
+        let node = queue.shift();
 
-        let stairsDistanceMap = new Grid(width, height);
-        queue = [{coordinates: stairsDistancePoint, distance: 0}];
-        while (queue.length != 0) {
-            let node = queue.shift();
-
-            if (stairsDistanceMap.get(node.coordinates) != null) {
-                continue;
-            }
-
-            stairsDistanceMap.set(node.coordinates, node.distance);
-
-            for (let i = 0; i < CardinalDirectionVectors.length; ++i) {
-                let next = {coordinates: node.coordinates.add(CardinalDirectionVectors[i]), distance: node.distance + 1};
-                if (stairsDistanceMap.get(next.coordinates) == null && stairsDistanceMap.hasCoord(next.coordinates) && 
-                    (grid.get(next.coordinates) == Tile.Floor ||  grid.get(next.coordinates) == Tile.Door) 
-                ) {
-                    queue.push(next);
-                }
-            }
+        if (stairsDistanceMap.get(node.coordinates) != null) {
+            continue;
         }
 
-        let distanceHeap = new Heap((a, b) => {return a.value - b.value});
-        for (let cell of stairsDistanceMap.cells()) {
-            if (cell.value != null) {
-                distanceHeap.insert(cell);
+        stairsDistanceMap.set(node.coordinates, node.distance);
+
+        for (let i = 0; i < CardinalDirectionVectors.length; ++i) {
+            let next = {coordinates: node.coordinates.add(CardinalDirectionVectors[i]), distance: node.distance + 1};
+            if (stairsDistanceMap.get(next.coordinates) == null && stairsDistanceMap.hasCoord(next.coordinates) && 
+                (grid.get(next.coordinates) == Tile.Floor ||  grid.get(next.coordinates) == Tile.Door) 
+            ) {
+                queue.push(next);
             }
         }
+    }
 
-        for (let i = 0; i < 20; ++i) {
-            distanceHeap.pop();
+    let distanceHeap = new Heap((a, b) => {return a.value - b.value});
+    for (let cell of stairsDistanceMap.cells()) {
+        if (cell.value != null) {
+            distanceHeap.insert(cell);
         }
+    }
 
-        let stairsPosition;
-        while (true) {
-            stairsPosition = distanceHeap.pop().coordinates;
-            if (grid.get(stairsPosition) == Tile.Floor) {
-                break;
-            }
+    for (let i = 0; i < 20; ++i) {
+        distanceHeap.pop();
+    }
+
+    let stairsPosition;
+    while (true) {
+        stairsPosition = distanceHeap.pop().coordinates;
+        if (grid.get(stairsPosition) == Tile.Floor) {
+            break;
         }
+    }
 
+    if (includeBoss) {
+        level.downStairs = add(Assets.spider, stairsPosition.x, stairsPosition.y);
+    } else {
         level.downStairs = add(Assets.downStairs, stairsPosition.x, stairsPosition.y);
     }
 

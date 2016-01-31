@@ -27,7 +27,7 @@ import {
 } from './component.js';
 
 export class Level {
-    constructor(width, height) {
+    constructor(width, height, depth) {
 
         this.id = Level.nextId++;
 
@@ -36,6 +36,7 @@ export class Level {
 
         this.width = width;
         this.height = height;
+        this.depth = depth;
 
         this.schedule = new Schedule();
 
@@ -62,10 +63,16 @@ export class Level {
 
     generate() {
         if (!this.generated) {
-            generateLevel(this, this.width, this.height, this.previousLevel == null, this.previousLevel, !this.bossLevel);
+            generateLevel(this, this.width, this.height, this.depth, this.previousLevel == null, this.previousLevel, !this.bossLevel, this.bossLevel);
             this.generated = true;
-            this.downStairs.DownStairs.level = new Level(this.width, this.height);
-            this.downStairs.DownStairs.level.previousLevel = this;
+
+            if (!this.bossLevel) {
+                this.downStairs.DownStairs.level = new Level(this.width, this.height, this.depth + 1);
+                this.downStairs.DownStairs.level.previousLevel = this;
+                if (this.depth > 1) {
+                    this.downStairs.DownStairs.level.bossLevel = true;
+                }
+            }
         }
     }
 

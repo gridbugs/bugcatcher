@@ -1,4 +1,4 @@
 export const WIDTH = 74;
 export const HEIGHT = 30;
 export const CANVAS_NAME = "canvas";
-export const RNG_SEED = null;
+export const RNG_SEED = 1454220580511;

@@ -187,6 +187,16 @@ export class DescriptionSystem {
                 this.printMessage(`The ${action.entity.Name.fullName} suffers from poison.`);
             }
             break;
+        case ActionType.StruggleInWeb:
+            if (action.entity.hasComponent(PlayerCharacter)) {
+                if (action.web.Web.health == 0) {
+                    this.printMessage("You break free from the web.");
+                } else {
+                    this.printMessage("You struggle in the web.");
+                }
+            }
+            break;
+            
         }
     }
 }

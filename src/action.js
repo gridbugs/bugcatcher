@@ -506,3 +506,20 @@ export class PoisonDamage extends Action {
         }
     }
 }
+PoisonDamage.type = ActionType.PoisonDamage;
+
+export class StruggleInWeb extends Action {
+    constructor(entity, web) {
+        super();
+        this.entity = entity;
+        this.web = web;
+    }
+
+    commit(level) {
+        this.web.Web.health--;
+        if (this.web.Web.health == 0) {
+            level.deleteEntity(this.web);       
+        }
+    }
+}
+StruggleInWeb.type = ActionType.StruggleInWeb;

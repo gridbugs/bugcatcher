@@ -1,5 +1,6 @@
 import {ActionType} from './action_type.js';
-import {Collider, Solid} from './component.js';
+import {Collider, Solid, Web, WebProof} from './component.js';
+import * as Action from './action.js';
 
 export class CollisionSystem {
     constructor(level) {
@@ -17,6 +18,21 @@ export class CollisionSystem {
                     break;
                 }
             }
+            if (!action.entity.hasComponent(WebProof)) {
+                let fromCell = this.level.entitySpacialHash.getCart(action.source);
+                if (fromCell.hasComponent(Web)) {
+                    let web;
+                    for (let e of fromCell) {
+                        if (e.hasComponent(Web)) {
+                            web = e;
+                        }
+                    }
+                    action.fail();
+                    this.level.scheduleImmediateAction(new Action.StruggleInWeb(action.entity, web));
+                    break;
+                }
+            }
+            break;
         }
     }
 }

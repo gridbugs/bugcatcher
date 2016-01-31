@@ -32,6 +32,9 @@ function shortestPathThroughGridCardinal(grid, start, end, canEnterPredicate) {
 }
 
 function canEnter(entity, entities) {
+    if (entities.hasComponent(Component.Pushable)) {
+        return entity.hasComponent(Component.CanPush);
+    }
     return !entities.hasComponent(Component.Solid);
 }
 

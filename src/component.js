@@ -373,3 +373,14 @@ export class Poisoned extends Component {
     }
 }
 Poisoned.type = ComponentType.Poisoned;
+
+export class Web extends Component {
+    constructor(health) {
+        super();
+        this.health = health;
+    }
+}
+Web.type = ComponentType.Web;
+
+export class WebProof extends Component {}
+WebProof.type = ComponentType.WebProof;
